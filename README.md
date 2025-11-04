@@ -53,7 +53,7 @@ AI alignment ensures artificial intelligence systems pursue goals consistent wit
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Mapika/AlignmentStudio.git
    cd AligmentStudio
    ```
    
