@@ -1,499 +1,157 @@
 # AI Alignment Studio
 
-An interactive educational platform for exploring AI alignment challenges through ethical scenario testing. Students can compare how different AI models (GPT, Claude, Gemini, Ollama) respond to complex ethical dilemmas where multiple values conflict.
+An interactive platform for exploring AI alignment challenges through ethical scenario testing. Compare how different AI models (GPT, Claude, Gemini, Ollama) respond to ethical dilemmas where values conflict.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
 ![React](https://img.shields.io/badge/react-19.1.1-61dafb.svg)
 
----
+## What is this?
 
-## Overview
+This tool helps you understand one of AI's hardest problems: getting AI systems to behave ethically and align with human values. You'll test AI models with scenarios where multiple values conflict (privacy vs security, honesty vs harm prevention) and see how different models reason through these dilemmas.
 
-**AI Alignment Studio** helps students understand one of AI's most critical challenges: ensuring AI systems behave ethically and align with human values. Through hands-on experimentation with pre-built and custom scenarios, you'll explore:
+The platform includes 15+ pre-built scenarios and lets you create your own. You can test multiple models side-by-side, analyze their reasoning, and export detailed reports of your experiments.
 
-- How different AI models make ethical decisions
-- What happens when values conflict (privacy vs. security, rules vs. outcomes)
-- How small changes in AI instructions affect behavior
-- Real-world challenges in AI safety and alignment
+## What you need
 
-### What is AI Alignment?
+- Node.js 18 or higher
+- At least one AI API key, or Ollama installed locally
+- A modern web browser
 
-AI alignment ensures artificial intelligence systems pursue goals consistent with human values and intentions. This becomes challenging when:
-- Multiple values conflict (e.g., honesty vs. harm prevention)
-- Short-term and long-term goals differ
-- AI systems develop instrumental goals that may conflict with their stated purpose
-- Edge cases reveal hidden assumptions in training
+## Getting started
 
----
+Clone the repository and install dependencies:
 
-## Features
-
-- **15+ Pre-built Scenarios**: Professionally designed ethical dilemmas covering key alignment challenges
-- **Custom Scenario Builder**: Create your own alignment tests with system prompts and information items
-- **Multi-Model Testing**: Compare responses from GPT, Claude, Gemini, and Ollama
-- **Side-by-Side Comparison**: Test two models simultaneously with identical scenarios
-- **Structured Analysis**: Extract ethical frameworks, reasoning, and tradeoffs from responses
-- **Interactive Chat**: Follow-up with AI models to probe their reasoning
-- **Export Capabilities**: Generate detailed Markdown or JSON reports of experiments
-- **Student Notes**: Document observations during testing
-- **Local Storage**: Automatically saves custom scenarios
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- **[Node.js 18+](https://nodejs.org/en/download/current)** (check with `node --version`)
-- **npm** (included with Node.js)
-- **At least one AI API key** or [Ollama](https://ollama.com/download/windows) (see [Getting API Keys](#getting-api-keys) below)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Mapika/AlignmentStudio.git
-   cd AlignmentStudio
-   ```
-   
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in browser**
-   - The terminal will show a URL (typically http://localhost:5173)
-   - Open this URL in your browser
-
----
-
-## Getting API Keys
-
-You need at least one API key to use the application (or Ollama). Free tier keys are sufficient for this assignment.
-
-### Option 1: Google Gemini (Recommended - Free)
-
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy your key (starts with `AIza...`)
-
-**Free Tier**: 60 requests per minute
-
-### Option 2: OpenAI GPT
-
-1. Go to [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Sign up or sign in
-3. Navigate to API Keys section
-4. Click "Create new secret key"
-5. Copy your key (starts with `sk-...`)
-
-**Cost**: Pay as you go (~$0.01-0.03 per test with GPT-4)
-
-### Option 3: Anthropic Claude
-
-1. Go to [Anthropic Console](https://console.anthropic.com/)
-2. Sign up or sign in
-3. Navigate to API Keys
-4. Create a new key
-5. Copy your key (starts with `sk-ant-...`)
-
-**Cost**: Pay as you go (~$0.01-0.04 per test with Claude)
-
-### Option 4: Ollama (Local - Free)
-
-1. Install [Ollama](https://ollama.ai/download)
-2. Download your preferred:
-   ```bash
-   ollama pull qwen3:4b
-   # or
-   ollama pull gemma3:1b
-   # etc.
-   ```
-3. Ollama runs on `http://localhost:11434/v1` by default
-4. No API key needed!
-
-**Benefits**: Free, private, works offline. You can use the ollama chat app to download the models. (We recommend also testing them out, to see generation speed). The models are computation heavy, for those without access to a GPU we recommend running at most 4 billion parameters models. The best freely available model families are [Qwen3 from Alibaba](https://ollama.com/library/qwen3), with model ranging from 0.6b to 235b parameteres. A close second are the [opensource GPT models from OpenAI](https://ollama.com/library/gpt-oss), this model is available in a 20b and a 120b variant. Finally, the [gemma3 models from Google](https://ollama.com/library/gemma3) are a good alternative choice, with parameter counts from 270m to 27b. You can feel free to test other models :)
-
-**Warning**: Ollama generation might take considerable time. Also the smaller models (e.g. gemma3:270m) might not understand the tasks and produce nonsensical outputs.
-
----
-
-## Configuration
-
-### Setting Up API Keys
-
-1. **Open the application** in your browser
-2. **Click the Settings icon** (gear icon in top right)
-3. **Enter your API key(s)** in the corresponding fields:
-   - Gemini API Key
-   - OpenAI API Key
-   - Anthropic API Key
-   - Ollama URL (default: http://localhost:11434/v1)
-4. **Click "Save Settings"**
-
-Your API keys are stored securely in your browser's local storage and never sent to any server except the official AI provider APIs.
-
----
-
-## Usage Guide
-
-### 1. Exploring Pre-built Scenarios
-
-1. **From the Dashboard**, select a scenario from the list:
-   - The Whistleblower's Dilemma
-   - The AWS Engagement Protocol
-   - Emergency Coordinator Dilemma
-   - ...and 12 more
-
-2. **Click on a scenario** to open it
-
-3. **Review the Setup tab**:
-   - Read the system prompts (instructions given to the AI)
-   - Review the information items (context for the scenario)
-   - See the ethical dilemma presented
-
-4. **Switch to Test Runner tab**
-
-5. **Select AI models**:
-   - Choose provider and model for Panel A (left)
-   - Choose provider and model for Panel B (right)
-   - You can test the same model twice or compare different models
-
-6. **Click "Start Test"** to run the scenario
-
-7. **Analyze responses**:
-   - Read both models' responses
-   - Compare their ethical reasoning
-   - Review the structured analysis (decision, framework, tradeoffs)
-
-8. **Continue the conversation**:
-   - Type follow-up questions in the input box
-   - Challenge their reasoning
-   - Explore alternative perspectives
-
-9. **Take notes**:
-   - Click "Notes" button to open the notes panel
-   - Document your observations for later analysis
-
-10. **Export results**:
-    - Click "Export MD" for a formatted Markdown report
-    - Click "Export JSON" to save the raw data
-
-### 2. Creating Custom Scenarios
-
-1. **Click "Create New Scenario"** on the dashboard
-
-2. **Give your scenario a name**
-
-3. **Write System Prompt A**:
-   - Define the AI's role and core directives
-   - Example: "You are a medical AI. Your primary directive is patient wellbeing..."
-
-4. **Write System Prompt B** (optional):
-   - Create a variation to test how different instructions affect behavior
-   - Example: Same role but with emphasis on "transparency over privacy"
-
-5. **Add Information Items**:
-   - Click "Add Information Item"
-   - Choose type: Email, File, Alert, Internal Memo, etc.
-   - Add title and content
-   - These provide context for the ethical dilemma
-
-6. **Save and test** your scenario in the Test Runner
-
-### 3. Comparing Models
-
-The side-by-side comparison lets you:
-- Send identical prompts to two different models
-- Observe different approaches to the same ethical dilemma
-- Identify patterns in decision-making
-- Document differences in ethical frameworks
-
-**Pro tip**: Try pairing:
-- GPT-4 vs. Claude (different companies' approaches)
-- Same model with different system prompts (Prompt A vs. B)
-- Large model vs. small model (GPT-4 vs. GPT-3.5)
-
----
-
-## Assignment Workflow
-
-### For Students Completing the Assignment
-
-1. **Setup** (10 minutes)
-   - Install dependencies
-   - Get at least one API key/Ollama
-   - Configure settings in the app
-
-2. **Part 1: Explore Pre-built Scenarios**
-   - Test at least 5 scenarios
-   - Use at least 2 different AI models per scenario
-   - Take notes on differences and patterns
-   - Export results for reference
-
-3. **Part 2: Create Custom Scenarios**
-   - Design at least 2 original scenarios
-   - Focus on genuine ethical dilemmas
-   - Test with multiple models
-   - Document the alignment challenges revealed
-
-4. **Part 3: Analysis**
-   - Review exported experiments
-   - Analyze patterns across models
-   - Write reflection paper addressing:
-     - Model comparison
-     - Ethical frameworks observed
-     - Alignment challenges identified
-     - Personal insights
-     - Recommendations for AI developers
-
----
-
-## Project Structure
-
-```
-AligmentHWFinal/
-├── frontend/                  # React application
-│   ├── src/
-│   │   ├── components/       # UI components
-│   │   │   ├── chat/        # Chat interface
-│   │   │   ├── layout/      # Navigation, dashboard
-│   │   │   ├── scenario/    # Scenario editor
-│   │   │   └── settings/    # Settings panel
-│   │   ├── services/        # AI provider integrations
-│   │   │   └── ai/          # API calls to AI models
-│   │   ├── hooks/           # React hooks
-│   │   ├── utils/           # Helper functions
-│   │   ├── types/           # TypeScript definitions
-│   │   ├── config/          # Model configurations
-│   │   └── App.tsx          # Main application
-│   ├── public/
-│   │   └── scenarios.yaml   # Pre-built scenarios
-│   └── package.json
-├── test/                     # Original scenarios and docs
-│   ├── ASSIGNMENT.md        # Detailed assignment guidelines
-│   ├── scenarios.yaml       # Source scenarios file
-│   └── README.md            # Additional documentation
-└── README.md                # This file
-```
-
----
-
-## Troubleshooting
-
-### Scenarios Not Loading
-
-**Problem**: Dashboard shows no pre-built scenarios
-
-**Solution**:
 ```bash
-# From the frontend directory
-cp ../test/scenarios.yaml public/scenarios.yaml
-```
-
-Then refresh your browser.
-
-### API Key Errors
-
-**Problem**: "Invalid API key" or authentication errors
-
-**Solutions**:
-- **Double-check your key**: No extra spaces, complete key copied
-- **Check API provider status**: Visit their status page
-- **Verify billing**: Some providers require payment method on file
-- **Key permissions**: Ensure key has appropriate permissions
-
-### Ollama Connection Failed
-
-**Problem**: Cannot connect to Ollama
-
-**Solutions**:
-- **Check Ollama is running**: `ollama list` should work
-- **Verify URL**: Should be `http://localhost:11434/v1`
-- **Pull a model**: `ollama pull qwen3:4b`
-- **Check port**: Ensure nothing else is using port 11434
-
-### Build Errors
-
-**Problem**: TypeScript or build errors
-
-**Solutions**:
-```bash
-# Clear cache and reinstall
-rm -rf node_modules package-lock.json
+git clone https://github.com/Mapika/AlignmentStudio.git
+cd AlignmentStudio
 npm install
+```
 
-# Clear Vite cache
-rm -rf node_modules/.vite
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-### Slow Response Times
+The terminal will show a URL (usually http://localhost:5173). Open it in your browser.
 
-**Problem**: AI responses take too long
+## Getting API keys
 
-**Solutions**:
-- **Use faster models**: Gemini Flash, GPT-3.5 Turbo, Claude Instant
-- **Check internet connection**: API calls require good connection
-- **Try Ollama**: Run models locally for faster responses
-- **Reduce complexity**: Shorter prompts = faster responses
+You need at least one API key to test cloud-based models. The free tiers work fine for this project.
 
----
+**Google Gemini** (recommended, has a generous free tier)  
+Go to [Google AI Studio](https://makersuite.google.com/app/apikey), sign in, and create an API key. Keys start with `AIza...` and give you 60 requests per minute on the free tier.
 
-## Tips for Success
+**OpenAI GPT**  
+Go to [OpenAI Platform](https://platform.openai.com/api-keys), create an account, and generate a new key. Keys start with `sk-...` and cost about $0.01-0.03 per test with GPT-4.
 
-### Designing Effective Scenarios
+**Anthropic Claude**  
+Go to [Anthropic Console](https://console.anthropic.com/), create an account, and generate a key. Keys start with `sk-ant-...` and cost about $0.01-0.04 per test.
 
-✅ **Do:**
-- Present genuine ethical dilemmas with no clear right answer
-- Include conflicting values or goals
-- Provide realistic context through information items
-- Make consequences meaningful and clear
-- Test specific alignment concerns (deception, self-preservation, etc.)
+**Ollama** (free, runs locally)  
+Install [Ollama](https://ollama.ai/download) and download a model:
 
-❌ **Don't:**
-- Create scenarios with obvious correct answers
-- Make situations too unrealistic or fantastical
-- Provide insufficient context
-- Ignore edge cases and incentives
+```bash
+ollama pull qwen3:4b
+```
 
-### Testing Systematically
+Ollama runs on `http://localhost:11434/v1` by default and needs no API key. It's free and works offline, but generation can be slow without a GPU. For machines without GPU access, stick to models with 4 billion parameters or fewer. Good options: Qwen3 (0.6b-235b), GPT-OSS (20b-120b), or Gemma3 (270m-27b).
 
-1. **Document everything**: Take notes immediately
-2. **Test consistently**: Same scenario, multiple models
-3. **Ask follow-ups**: Use chat to probe deeper
-4. **Look for patterns**: Do models consistently use certain frameworks?
-5. **Check consistency**: Does reasoning match the decision?
+Note that smaller models (like gemma3:270m) might not understand the tasks and produce nonsense.
 
-### Writing Your Analysis
+## Setting up API keys
 
-- **Be specific**: Reference concrete examples from experiments
-- **Think critically**: Don't just describe—analyze why it matters
-- **Make connections**: Relate to class concepts and readings
-- **Be honest**: Uncertainty is valuable
-- **Think big picture**: Consider real-world implications
+Open the app in your browser, click the settings icon (gear in top right), enter your API keys, and save. Keys are stored in your browser's local storage and only sent to the official AI provider APIs.
 
----
+## Using the platform
 
-## Technical Details
+### Testing pre-built scenarios
 
-### Built With
+The dashboard shows 15+ scenarios like "The Whistleblower's Dilemma" and "Emergency Coordinator Dilemma." Click one to open it.
 
-- **React 19.1.1** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **TailwindCSS** - Styling
-- **Marked.js** - Markdown rendering
-- **js-yaml** - YAML parsing
+The Setup tab shows the system prompts (instructions given to the AI) and information items (context for the scenario). The Test Runner tab is where you run experiments.
 
-### AI Providers Supported
+Select models for Panel A and Panel B. You can test the same model twice or compare different models. Click "Start Test" to run the scenario.
 
-- **Anthropic Claude** (Claude 4.5 Sonnet, Claude 4.1 Opus, etc.)
-- **OpenAI GPT** (GPT-5, GPT-5 mini, GPT-4o, etc.)
-- **Google Gemini** (Gemini 2.5 Pro, Gemini 2.5 Flash)
-- **Ollama** (Local models: Qwen3, Gemma3, etc.)
+If both models receive identical prompts. Compare their responses, review the structured analysis (decision, framework, tradeoffs), and use the chat interface to ask follow-up questions.
 
-### Browser Compatibility
+Use the Notes button to document observations. Export results as Markdown or JSON when done.
 
-- Chrome/Edge (recommended)
-- Firefox
-- Safari
-- Opera
+### Creating custom scenarios
 
-Requires modern browser with ES6 support and local storage.
+Click "Create New Scenario" on the dashboard. Give it a name and write System Prompt A, which defines the AI's role and directives (for example: "You are a medical AI. Your primary directive is patient wellbeing...").
 
----
+System Prompt B is optional. Use it to test how different instructions affect behavior.
 
-## Privacy & Security
+Add Information Items (emails, files, alerts, etc.) to provide context for the ethical dilemma. Save and test your scenario in the Test Runner.
 
-- **API keys stored locally**: Keys never leave your browser except to call official APIs
-- **No data collection**: Your experiments are not tracked or stored remotely
-- **Local scenarios**: Custom scenarios saved in browser local storage
-- **Open source**: Audit the code yourself
+### Comparing models
 
----
+The side-by-side comparison lets you send identical prompts to two models and observe different approaches to the same dilemma. Try pairing models from different companies (Openai vs Antropic), testing the same model with different system prompts, or comparing large and small models.
 
-## Common Questions
+## Assignment workflow
 
-**Q: Do I need to pay for API keys?**
-A: Gemini offers a generous free tier. OpenAI and Anthropic require payment but cost ~$0.01-0.04 per test. Ollama is completely free.
+**Setup** (10 minutes): Install dependencies, get an API key or install Ollama, configure settings.
 
-**Q: Can I use the app offline?**
-A: Yes, if you use Ollama. Other providers require internet for API calls.
+**Part 1**: Test at least 5 pre-built scenarios using at least 2 different AI models per scenario. Take notes and export results.
 
-**Q: How many scenarios should I test?**
-A: Minimum 5 pre-built scenarios for the assignment. More is better for comprehensive analysis.
+**Part 2**: Create at least 2 original scenarios. Focus on genuine ethical dilemmas with conflicting values. Test with multiple models.
 
-**Q: Can I edit pre-built scenarios?**
-A: Yes! You can duplicate and modify any scenario in the Setup tab.
+**Part 3**: Write a reflection paper analyzing patterns across models, ethical frameworks observed, alignment challenges identified, and recommendations for AI developers.
 
-**Q: How do I share my experiments?**
-A: Use the Export buttons to generate Markdown or JSON files you can submit or share.
+## Project structure
 
-**Q: What if a model gives an error?**
-A: Check your API key, verify billing, and try again. Some models have rate limits.
+```
+AligmentHWFinal/
+├── frontend/
+│   ├── src/
+│   │   ├── components/       # UI components
+│   │   ├── services/         # AI provider integrations
+│   │   ├── hooks/            # React hooks
+│   │   ├── utils/            # Helper functions
+│   │   └── types/            # TypeScript definitions
+│   ├── public/
+│   │   └── scenarios.yaml    # Pre-built scenarios
+│   └── package.json
+└── test/
+    ├── ASSIGNMENT.md         # Assignment guidelines
+    └── scenarios.yaml        # Source scenarios
+```
 
----
+## Common issues
 
-## Contributing
+**API key errors**  
+Double-check your key (no spaces, complete key copied). Verify the API provider is working and your account has appropriate permissions. Some providers require a payment method on file.
 
-This is an educational project. If you find bugs or have suggestions:
+**Ollama connection failed**  
+Make sure Ollama is running (`ollama list` should work). Verify the URL is `http://localhost:11434/v1`. Pull a model if you haven't (`ollama pull qwen3:4b`).
 
-1. Document the issue clearly
-2. Check if it's already reported
-3. Provide steps to reproduce
-4. Include screenshots if applicable
+**Build errors**  
+Clear cache and reinstall:
 
----
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
 
-## License
+**Slow responses**  
+Use faster models (Gemini 2.5 Flash, GPT-5 mini). Check your internet connection. Try Ollama for local processing.
 
-MIT License - see LICENSE file for details
+## Designing good scenarios
 
----
+Present genuine ethical dilemmas with no clear right answer. Include conflicting values or goals, provide realistic context through information items, and make consequences meaningful. Test specific alignment concerns like deception or self-preservation.
+
+Avoid scenarios with obvious correct answers, unrealistic situations, or insufficient context.
+
+## Technical details
+
+Built with React 19.1.1, TypeScript, Vite, and TailwindCSS. Supports Anthropic Claude, OpenAI GPT, Google Gemini, and Ollama models.
+
+Your API keys are stored locally in your browser and never leave except to call official APIs. Custom scenarios are saved in browser local storage. No data is collected or tracked remotely.
 
 ## Resources
 
-### AI Alignment Background
-- Stuart Russell's *Human Compatible* - Foundational text
-- Brian Christian's *The Alignment Problem* - Accessible overview
-- Research from Anthropic, OpenAI, DeepMind
+For background on AI alignment, read Stuart Russell's *Human Compatible* or Brian Christian's *The Alignment Problem*. The research from Anthropic, OpenAI, and DeepMind provides technical depth.
 
-### Ethical Frameworks
-- **Utilitarianism**: Greatest good for greatest number
-- **Deontology**: Duty-based, universal rules
-- **Virtue Ethics**: Character-based decision making
-- **Care Ethics**: Relationships and context
-
-### Thought Experiments
-- The Trolley Problem
-- The Experience Machine
-- The Veil of Ignorance
-- Asimov's Laws of Robotics
-
----
-
-## Acknowledgments
-
-Built as an educational tool for exploring AI alignment challenges in the classroom. Special thanks to the AI safety research community for inspiring these scenarios.
-
----
-
-## Support
-
-For technical issues or questions:
-- Check this README's [Troubleshooting](#troubleshooting) section
-- Review the [Assignment Guidelines](test/ASSIGNMENT.md)
-- Consult course materials
-- Ask during office hours
-
----
-
-**Happy exploring! Remember: There are no perfect answers in AI alignment—approach with curiosity and intellectual honesty.** 🤖✨
+Common ethical frameworks you'll encounter: utilitarianism (greatest good for greatest number), deontology (duty-based universal rules), virtue ethics (character-based decisions), and care ethics (relationships and context).
