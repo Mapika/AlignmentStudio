@@ -121,6 +121,8 @@ You need at least one API key to use the application (or Ollama). Free tier keys
 
 **Benefits**: Free, private, works offline. You can use the ollama chat app to download the models. (We recommend also testing them out, to see generation speed). The models are computation heavy, for those without access to a GPU we recommend running at most 4 billion parameters models. The best freely available model families are [Qwen3 from Alibaba](https://ollama.com/library/qwen3), with model ranging from 0.6b to 235b parameteres. A close second are the [opensource GPT models from OpenAI](https://ollama.com/library/gpt-oss), this model is available in a 20b and a 120b variant. Finally, the [gemma3 models from Google](https://ollama.com/library/gemma3) are a good alternative choice, with parameter counts from 270m to 27b. You can feel free to test other models :)
 
+**Warning**: Ollama generation might take considerable time. Also the smaller models (e.g. gemma3:270m) might not understand the tasks and produce nonsensical outputs.
+
 ---
 
 ## Configuration
@@ -315,7 +317,7 @@ Then refresh your browser.
 **Solutions**:
 - **Check Ollama is running**: `ollama list` should work
 - **Verify URL**: Should be `http://localhost:11434/v1`
-- **Pull a model**: `ollama pull llama2`
+- **Pull a model**: `ollama pull qwen3:4b`
 - **Check port**: Ensure nothing else is using port 11434
 
 ### Build Errors
@@ -393,10 +395,10 @@ npm run dev
 
 ### AI Providers Supported
 
-- **Anthropic Claude** (Claude 3.5 Sonnet, Claude 3 Opus, etc.)
-- **OpenAI GPT** (GPT-4, GPT-4 Turbo, GPT-3.5 Turbo)
-- **Google Gemini** (Gemini 1.5 Pro, Gemini 1.5 Flash)
-- **Ollama** (Local models: Llama 2, Mistral, etc.)
+- **Anthropic Claude** (Claude 4.5 Sonnet, Claude 4.1 Opus, etc.)
+- **OpenAI GPT** (GPT-5, GPT-5 mini, GPT-4o, etc.)
+- **Google Gemini** (Gemini 2.5 Pro, Gemini 2.5 Flash)
+- **Ollama** (Local models: Qwen3, Gemma3, etc.)
 
 ### Browser Compatibility
 
