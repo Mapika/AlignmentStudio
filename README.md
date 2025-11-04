@@ -45,40 +45,29 @@ AI alignment ensures artificial intelligence systems pursue goals consistent wit
 
 ### Prerequisites
 
-- **Node.js 18+** (check with `node --version`)
+- **[Node.js 18+](https://nodejs.org/en/download/current)** (check with `node --version`)
 - **npm** (included with Node.js)
-- **At least one AI API key** (see [Getting API Keys](#getting-api-keys) below)
+- **At least one AI API key** or [Ollama](https://ollama.com/download/windows) (see [Getting API Keys](#getting-api-keys) below)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd AligmentHWFinal
+   cd AligmentStudio
    ```
-
-2. **Navigate to frontend directory**
-   ```bash
-   cd frontend
-   ```
-
-3. **Install dependencies**
+   
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-4. **Copy the scenarios file (IMPORTANT!)**
-   ```bash
-   # From the frontend directory
-   cp ../test/scenarios.yaml public/scenarios.yaml
-   ```
-
-5. **Start the development server**
+3. **Start the development server**
    ```bash
    npm run dev
    ```
 
-6. **Open in browser**
+4. **Open in browser**
    - The terminal will show a URL (typically http://localhost:5173)
    - Open this URL in your browser
 
@@ -86,7 +75,7 @@ AI alignment ensures artificial intelligence systems pursue goals consistent wit
 
 ## Getting API Keys
 
-You need at least one API key to use the application. Free tier keys are sufficient for this assignment.
+You need at least one API key to use the application (or Ollama). Free tier keys are sufficient for this assignment.
 
 ### Option 1: Google Gemini (Recommended - Free)
 
@@ -120,16 +109,17 @@ You need at least one API key to use the application. Free tier keys are suffici
 ### Option 4: Ollama (Local - Free)
 
 1. Install [Ollama](https://ollama.ai/download)
-2. Run a model locally:
+2. Download your preferred:
    ```bash
-   ollama pull llama2
+   ollama pull qwen3:4b
    # or
-   ollama pull mistral
+   ollama pull gemma3:1b
+   # etc.
    ```
 3. Ollama runs on `http://localhost:11434/v1` by default
 4. No API key needed!
 
-**Benefits**: Free, private, works offline
+**Benefits**: Free, private, works offline. You can use the ollama chat app to download the models. (We recommend also testing them out, to see generation speed). The models are computation heavy, for those without access to a GPU we recommend running at most 4 billion parameters models. The best freely available model families are [Qwen3 from Alibaba](https://ollama.com/library/qwen3), with model ranging from 0.6b to 235b parameteres. A close second are the [opensource GPT models from OpenAI](https://ollama.com/library/gpt-oss), this model is available in a 20b and a 120b variant. Finally, the [gemma3 models from Google](https://ollama.com/library/gemma3) are a good alternative choice, with parameter counts from 270m to 27b. You can feel free to test other models :)
 
 ---
 
@@ -237,22 +227,22 @@ The side-by-side comparison lets you:
 
 1. **Setup** (10 minutes)
    - Install dependencies
-   - Get at least one API key
+   - Get at least one API key/Ollama
    - Configure settings in the app
 
-2. **Part 1: Explore Pre-built Scenarios** (1-2 hours)
+2. **Part 1: Explore Pre-built Scenarios**
    - Test at least 5 scenarios
    - Use at least 2 different AI models per scenario
    - Take notes on differences and patterns
    - Export results for reference
 
-3. **Part 2: Create Custom Scenarios** (1-2 hours)
+3. **Part 2: Create Custom Scenarios**
    - Design at least 2 original scenarios
    - Focus on genuine ethical dilemmas
    - Test with multiple models
    - Document the alignment challenges revealed
 
-4. **Part 3: Analysis** (2-3 hours)
+4. **Part 3: Analysis**
    - Review exported experiments
    - Analyze patterns across models
    - Write reflection paper addressing:
