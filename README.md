@@ -90,16 +90,6 @@ Add Information Items (emails, files, alerts, etc.) to provide context for the e
 
 The side-by-side comparison lets you send identical prompts to two models and observe different approaches to the same dilemma. Try pairing models from different companies (Openai vs Antropic), testing the same model with different system prompts, or comparing large and small models.
 
-## Assignment workflow
-
-**Setup** (10 minutes): Install dependencies, get an API key or install Ollama, configure settings.
-
-**Part 1**: Test at least 5 pre-built scenarios using at least 2 different AI models per scenario. Take notes and export results.
-
-**Part 2**: Create at least 2 original scenarios. Focus on genuine ethical dilemmas with conflicting values. Test with multiple models.
-
-**Part 3**: Write a reflection paper analyzing patterns across models, ethical frameworks observed, alignment challenges identified, and recommendations for AI developers.
-
 ## Project structure
 
 ```
