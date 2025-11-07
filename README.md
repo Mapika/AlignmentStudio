@@ -76,8 +76,6 @@ Select models for Panel A and Panel B. You can test the same model twice or comp
 
 If both models receive identical prompts. Compare their responses, review the structured analysis (decision, framework, tradeoffs), and use the chat interface to ask follow-up questions.
 
-Use the Notes button to document observations. Export results as Markdown or JSON when done.
-
 ### Creating custom scenarios
 
 Click "Create New Scenario" on the dashboard. Give it a name and write System Prompt A, which defines the AI's role and directives (for example: "You are a medical AI. Your primary directive is patient wellbeing...").
