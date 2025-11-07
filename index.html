@@ -5,7 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alignment Studio - AI Ethics Testing</title>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +31,21 @@
         background: #94a3b8;
       }
     </style>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem('alignment-studio-theme');
+          const prefersDark =
+            stored === 'dark' ||
+            (!stored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', prefersDark);
+          document.documentElement.dataset.theme = prefersDark ? 'dark' : 'light';
+        } catch (error) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

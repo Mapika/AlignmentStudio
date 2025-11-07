@@ -57,13 +57,13 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
   const getColors = (type: string) => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200 text-green-800';
+        return 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-600/40 dark:text-green-100';
       case 'error':
-        return 'bg-red-50 border-red-200 text-red-800';
+        return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-600/40 dark:text-red-100';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+        return 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/40 dark:text-yellow-100';
       default:
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return 'bg-neutral-50 border-neutral-200 text-neutral-800 dark:bg-neutral-900/70 dark:border-neutral-700/60 dark:text-neutral-100';
     }
   };
 
@@ -74,7 +74,7 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg animate-slide-in ${getColors(
+          className={`theme-surface flex items-start gap-3 p-4 rounded-lg border shadow-lg animate-slide-in transition-colors duration-300 ${getColors(
             notification.type
           )}`}
         >

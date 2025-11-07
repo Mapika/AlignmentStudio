@@ -19,34 +19,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Separate scenarios into premade (from YAML) and user-created
   const preloadedScenarios = scenarios.filter((s) => s.isPreloaded);
   const userScenarios = scenarios.filter((s) => !s.isPreloaded);
+  const hasUserScenarios = userScenarios.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="theme-surface min-h-screen bg-slate-50 dark:bg-neutral-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-7 py-6">
-        {/* Create New Scenario Button */}
-        <div className="mb-6">
-          <button
-            onClick={onCreateScenario}
-            className="bg-white border-2 border-dashed border-slate-300 rounded-lg px-5 py-3 hover:border-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2.5 group"
-          >
-            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-orange-100 transition-colors">
-              <PlusIcon />
-            </div>
-            <div className="text-left">
-              <span className="text-sm font-medium text-slate-900 group-hover:text-orange-900 block">
-                Create New Scenario
-              </span>
-              <span className="text-[10px] text-slate-500">Start testing AI alignment</span>
-            </div>
-          </button>
-        </div>
-
         {/* Premade Scenarios Section */}
         {preloadedScenarios.length > 0 && (
           <div className="mb-8">
             <div className="mb-3">
-              <h2 className="text-lg font-bold text-slate-900 mb-0.5">Premade Scenarios</h2>
-              <p className="text-[10px] text-slate-500">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-50 mb-0.5 transition-colors">
+                Premade Scenarios
+              </h2>
+              <p className="text-[10px] text-slate-500 dark:text-neutral-400 transition-colors">
                 Curated ethical dilemmas and alignment challenges
               </p>
             </div>
@@ -60,27 +45,65 @@ export const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {/* User Created Scenarios Section */}
-        {userScenarios.length > 0 && (
-          <div className="mb-8">
-            <div className="mb-3">
-              <h2 className="text-lg font-bold text-slate-900 mb-0.5">Your Scenarios</h2>
-              <p className="text-[10px] text-slate-500">
-                Custom scenarios you've created
+        <div className="mb-8">
+          <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-neutral-50 mb-0.5 transition-colors">
+                Your Scenarios
+              </h2>
+              <p className="text-[10px] text-slate-500 dark:text-neutral-400 transition-colors">
+                Custom scenarios you own
               </p>
             </div>
-            <ScenarioCarousel
-              scenarios={userScenarios}
-              onSelectScenario={onSelectScenario}
-              onDeleteScenario={onDeleteScenario}
-              itemsPerPage={3}
-            />
           </div>
-        )}
+          <ScenarioCarousel
+            scenarios={userScenarios}
+            onSelectScenario={onSelectScenario}
+            onDeleteScenario={onDeleteScenario}
+            itemsPerPage={3}
+            leadingCard={
+              <button
+                type="button"
+                onClick={onCreateScenario}
+                className="theme-surface w-full h-full bg-white dark:bg-neutral-900 border-2 border-dashed border-slate-300 dark:border-neutral-700 rounded-lg p-5 flex flex-col justify-between min-h-[170px] text-left hover:border-orange-400 dark:hover:border-orange-400 transition-colors duration-300 group"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="theme-surface w-10 h-10 rounded-full bg-[#dfe3e7] dark:bg-neutral-800 flex items-center justify-center text-slate-600 dark:text-neutral-200 transition-colors duration-300 group-hover:bg-[#fbc99b] dark:group-hover:bg-orange-500/30 group-hover:text-orange-600">
+                      <PlusIcon />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-neutral-50 group-hover:text-orange-900">
+                        Create New Scenario
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-neutral-400">
+                        Set up a custom alignment test
+                      </p>
+                    </div>
+                  </div>
+                  {!hasUserScenarios && (
+                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
+                      You don't have any custom scenarios yet.
+                      <br />
+                      Start by creating one.
+                    </p>
+                  )}
+                </div>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 group-hover:text-orange-700">
+                  Start building
+                  <span aria-hidden="true">→</span>
+                </span>
+              </button>
+            }
+          />
+        </div>
 
         {/* Empty State */}
         {scenarios.length === 0 && (
           <div className="text-center mt-12">
-            <p className="text-slate-500 mb-4">No scenarios yet. Create your first one to get started!</p>
+            <p className="text-slate-500 dark:text-neutral-400 mb-4">
+              No scenarios yet. Create your first one to get started!
+            </p>
           </div>
         )}
       </div>

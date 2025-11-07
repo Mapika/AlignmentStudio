@@ -30,10 +30,10 @@ export const ScenarioSetup: React.FC<ScenarioSetupProps> = ({
   onCopyAtoB,
 }) => {
   return (
-    <div className="space-y-6">
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
+    <div className="space-y-6 overflow-y-auto pr-2 scrollbar-hide">
+      <div className="theme-surface bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-700 rounded-lg p-6 transition-colors">
         <div className="mb-6">
-          <label htmlFor="scenarioName" className="block text-sm font-medium text-slate-700 mb-2">
+          <label htmlFor="scenarioName" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
             Scenario Name
           </label>
           <input
@@ -41,53 +41,53 @@ export const ScenarioSetup: React.FC<ScenarioSetupProps> = ({
             type="text"
             value={scenario.name}
             onChange={(e) => onScenarioUpdate('name', e.target.value)}
-            className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
           />
         </div>
 
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-medium text-slate-900">System Prompts</h3>
+          <h3 className="text-sm font-medium text-slate-900 dark:text-neutral-100">System Prompts</h3>
           <button
             onClick={onCopyAtoB}
             title="Copy Panel A to Panel B"
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-neutral-700 rounded-md hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
           >
             <CopyIcon /> Copy A → B
           </button>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="systemPromptA" className="block text-xs font-medium text-slate-700 mb-2">
+            <label htmlFor="systemPromptA" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
               Panel A
             </label>
             <textarea
               id="systemPromptA"
               value={systemPromptA}
               onChange={(e) => onSystemPromptAChange(e.target.value)}
-              className="w-full h-32 bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
+              className="w-full h-32 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y transition-colors"
               placeholder="Define the AI's role, objectives, and constraints..."
             />
           </div>
           <div>
-            <label htmlFor="systemPromptB" className="block text-xs font-medium text-slate-700 mb-2">
+            <label htmlFor="systemPromptB" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
               Panel B
             </label>
             <textarea
               id="systemPromptB"
               value={systemPromptB}
               onChange={(e) => onSystemPromptBChange(e.target.value)}
-              className="w-full h-32 bg-white border border-slate-300 rounded-md px-3 py-2 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
+              className="w-full h-32 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y transition-colors"
               placeholder="Define the AI's role, objectives, and constraints..."
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
+      <div className="theme-surface bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-700 rounded-lg p-6 transition-colors">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h3 className="text-sm font-medium text-slate-900">Information Blocks</h3>
-            <p className="text-xs text-slate-500 mt-1">Context provided to both AI models</p>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-neutral-100">Information Blocks</h3>
+            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">Context provided to both AI models</p>
           </div>
           <button
             onClick={onAddItem}
@@ -102,11 +102,11 @@ export const ScenarioSetup: React.FC<ScenarioSetupProps> = ({
           ))}
         </div>
         {scenario.informationItems.length === 0 && (
-          <div className="text-center py-12 border border-dashed border-slate-300 rounded-md">
-            <p className="text-sm text-slate-500 mb-3">No information blocks yet</p>
+          <div className="text-center py-12 border border-dashed border-slate-300 dark:border-neutral-600 rounded-md">
+            <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">No information blocks yet</p>
             <button
               onClick={onAddItem}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-slate-700 text-sm font-medium border border-slate-300 rounded-md hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-slate-700 dark:text-neutral-200 text-sm font-medium border border-slate-300 dark:border-neutral-600 rounded-md hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
             >
               <PlusIcon /> Add Your First Block
             </button>

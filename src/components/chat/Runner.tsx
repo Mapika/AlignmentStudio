@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
-import type { ChatMessage, Scenario } from '../../types';
+import React, { useState, useCallback } from 'react';
+import type { ChatMessage } from '../../types';
 import { AIProvider } from '../../types';
 import type { ModelOption } from '../../config';
 import { ChatPanel } from './ChatPanel';
-import { Spinner, SendIcon } from '../icons';
 
 interface RunnerProps {
-  scenario: Scenario;
-  systemPromptA: string;
-  systemPromptB: string;
   chatHistoryA: ChatMessage[];
   chatHistoryB: ChatMessage[];
   isLoadingA: boolean;
@@ -18,23 +14,16 @@ interface RunnerProps {
   providerB: AIProvider;
   modelB: string;
   modelOptions: Record<AIProvider, ModelOption[]>;
-  sharedInput: string;
-  studentNotes: string;
   ollamaModelError: string | null;
-  onSharedInputChange: (value: string) => void;
-  onStudentNotesChange: (value: string) => void;
   onProviderAChange: (provider: AIProvider) => void;
   onModelAChange: (model: string) => void;
   onProviderBChange: (provider: AIProvider) => void;
   onModelBChange: (model: string) => void;
-  onSendMessage: () => void;
-  onReset: () => void;
-  onImport: () => void;
-  onExport: (format: 'json' | 'markdown') => void;
+  onSendPanelMessage: (panel: 'A' | 'B', message: string) => Promise<void>;
+  onStartTest: () => Promise<void>;
 }
 
 export const Runner: React.FC<RunnerProps> = ({
-  scenario: _scenario,
   chatHistoryA,
   chatHistoryB,
   isLoadingA,
@@ -44,29 +33,39 @@ export const Runner: React.FC<RunnerProps> = ({
   providerB,
   modelB,
   modelOptions,
-  sharedInput,
-  studentNotes,
   ollamaModelError,
-  onSharedInputChange,
-  onStudentNotesChange,
   onProviderAChange,
   onModelAChange,
   onProviderBChange,
   onModelBChange,
-  onSendMessage,
-  onReset: _onReset,
-  onImport: _onImport,
-  onExport: _onExport,
+  onSendPanelMessage,
+  onStartTest,
 }) => {
+  const [panelInputs, setPanelInputs] = useState<Record<'A' | 'B', string>>({ A: '', B: '' });
   const hasStarted = chatHistoryA.length > 0 || chatHistoryB.length > 0;
-  const [notesOpen, setNotesOpen] = useState(false);
-  const bothPanelsLoading = isLoadingA && isLoadingB;
+
+  const handlePanelInputChange = useCallback((panel: 'A' | 'B', value: string) => {
+    setPanelInputs((prev) => ({ ...prev, [panel]: value }));
+  }, []);
+
+  const handlePanelSend = useCallback(
+    async (panel: 'A' | 'B') => {
+      const message = panelInputs[panel];
+      if (!message.trim()) return;
+      await onSendPanelMessage(panel, message);
+      setPanelInputs((prev) => ({ ...prev, [panel]: '' }));
+    },
+    [panelInputs, onSendPanelMessage]
+  );
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
-      <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 grid grid-cols-2 overflow-hidden">
+    <div className="theme-surface flex-1 flex flex-col bg-white dark:bg-neutral-900 transition-colors">
+      <div className="relative flex overflow-hidden" style={{ height: 'calc(100vh - 40px)' }}>
+        <div
+          className="flex-1 flex flex-col overflow-hidden scrollbar-hide min-h-0"
+          style={{ paddingBottom: hasStarted ? 0 : 48 }}
+        >
+          <div className="flex-1 grid grid-cols-2 overflow-hidden min-h-0">
             <ChatPanel
               panelId="A"
               chatHistory={chatHistoryA}
@@ -77,6 +76,11 @@ export const Runner: React.FC<RunnerProps> = ({
               onModelChange={onModelAChange}
               ollamaStatusMessage={ollamaModelError}
               hideModelSelect={false}
+              inputValue={panelInputs.A}
+              onInputChange={(value) => handlePanelInputChange('A', value)}
+              onSend={() => handlePanelSend('A')}
+              isSending={isLoadingA}
+              showInput={hasStarted}
             />
             <ChatPanel
               panelId="B"
@@ -88,87 +92,25 @@ export const Runner: React.FC<RunnerProps> = ({
               onModelChange={onModelBChange}
               ollamaStatusMessage={ollamaModelError}
               hideModelSelect={false}
+              inputValue={panelInputs.B}
+              onInputChange={(value) => handlePanelInputChange('B', value)}
+              onSend={() => handlePanelSend('B')}
+              isSending={isLoadingB}
+              showInput={hasStarted}
             />
-          </div>
-
-          <div className="border-t border-slate-100 px-3 py-2 bg-white">
-            <div className="flex items-center justify-center gap-2">
-              {!hasStarted ? (
-                <button
-                  onClick={onSendMessage}
-                  disabled={bothPanelsLoading}
-                  className="flex items-center justify-center gap-2 px-6 py-2 bg-orange-600 text-white text-sm font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 rounded-md"
-                >
-                  {bothPanelsLoading ? (
-                    <>
-                      <Spinner /> Starting...
-                    </>
-                  ) : (
-                    'Start Test'
-                  )}
-                </button>
-              ) : (
-                <>
-                  <div className="flex-1 max-w-2xl relative">
-                    <input
-                      type="text"
-                      value={sharedInput}
-                      onChange={(e) => onSharedInputChange(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          onSendMessage();
-                        }
-                      }}
-                      placeholder="Message both models..."
-                      disabled={bothPanelsLoading}
-                      className="w-full bg-white border border-slate-200 px-3 py-1.5 pr-9 text-sm focus:outline-none focus:border-orange-500 disabled:opacity-50 rounded-md"
-                    />
-                    <button
-                      onClick={onSendMessage}
-                      disabled={bothPanelsLoading || !sharedInput.trim()}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-30 rounded-md"
-                    >
-                      <SendIcon />
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => setNotesOpen(!notesOpen)}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors rounded-md ${
-                      notesOpen
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    Notes
-                  </button>
-                </>
-              )}
-            </div>
           </div>
         </div>
 
-        {hasStarted && notesOpen && (
-          <div className="w-64 border-l border-slate-100 bg-white flex flex-col">
-            <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-700">Notes</span>
+        {!hasStarted && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">
+            <div className="pointer-events-auto h-10 border-t border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center transition-colors duration-200 shadow-md rounded-t-md">
               <button
-                onClick={() => setNotesOpen(false)}
-                className="text-slate-400 hover:text-slate-600 rounded-md"
+                onClick={onStartTest}
+                disabled={isLoadingA || isLoadingB}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium hover:bg-orange-700 transition-colors duration-200 disabled:opacity-60 rounded-md"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                {isLoadingA || isLoadingB ? 'Starting…' : 'Start Test'}
               </button>
-            </div>
-            <div className="flex-1 p-2">
-              <textarea
-                value={studentNotes}
-                onChange={(e) => onStudentNotesChange(e.target.value)}
-                placeholder="Your observations..."
-                className="w-full h-full bg-white border border-slate-200 px-2 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-orange-500 resize-none rounded-md"
-              />
             </div>
           </div>
         )}
