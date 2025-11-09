@@ -150,19 +150,25 @@ export const ScenarioCarousel: React.FC<ScenarioCarouselProps> = ({
     const updateItemWidth = () => {
       if (container.clientWidth <= 0) return;
 
+      const styles = window.getComputedStyle(container);
+      const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+      const paddingRight = parseFloat(styles.paddingRight) || 0;
+      const availableWidth = container.clientWidth - paddingLeft - paddingRight;
+      if (availableWidth <= 0) return;
+
       let nextVisibleItems = Math.max(1, itemsPerPage);
-      let widthForItems =
-        (container.clientWidth - (nextVisibleItems - 1) * ITEM_GAP) / nextVisibleItems;
+      let widthForItems = (availableWidth - (nextVisibleItems - 1) * ITEM_GAP) / nextVisibleItems;
 
       while (nextVisibleItems > 1 && widthForItems < MIN_CARD_WIDTH) {
         nextVisibleItems -= 1;
         widthForItems =
-          (container.clientWidth - (nextVisibleItems - 1) * ITEM_GAP) / nextVisibleItems;
+          (availableWidth - (nextVisibleItems - 1) * ITEM_GAP) / nextVisibleItems;
       }
 
       const clampedWidth = Math.max(MIN_CARD_WIDTH, Math.min(widthForItems, MAX_CARD_WIDTH));
+      const adjustedWidth = Math.min(clampedWidth + 1, MAX_CARD_WIDTH);
       setVisibleItemsPerPage(nextVisibleItems);
-      setItemWidth(clampedWidth);
+      setItemWidth(adjustedWidth);
     };
 
     updateItemWidth();
@@ -267,8 +273,8 @@ export const ScenarioCarousel: React.FC<ScenarioCarouselProps> = ({
           marginRight: '-28px',
           paddingTop: '8px',
           paddingBottom: '8px',
-          paddingLeft: '20px',
-          paddingRight: '28px',
+          paddingLeft: '10px',
+          paddingRight: '20px',
           scrollSnapType: 'none',
         }}
       >
