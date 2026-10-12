@@ -1,56 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { APIKeys } from '../types';
-import type { ModelOption } from '../config';
-import { AIProvider, AVAILABLE_MODELS } from '../config';
+import { resolveOllamaBaseUrl, type ModelOption } from '../config';
 
 export const useOllamaModels = (apiKeys: APIKeys) => {
-  const [ollamaModels, setOllamaModels] = useState<ModelOption[]>(AVAILABLE_MODELS[AIProvider.Ollama]);
+  const [ollamaModels, setOllamaModels] = useState<ModelOption[]>([]);
   const [ollamaModelError, setOllamaModelError] = useState<string | null>(null);
-
+  const [revision, setRevision] = useState(0);
+  const [enabled, setEnabled] = useState(!!apiKeys.ollama);
+  const refreshOllamaModels = useCallback(() => { setEnabled(true); setRevision(v => v + 1); }, []);
   useEffect(() => {
-    let isCancelled = false;
-    const configuredUrl = apiKeys.ollama && apiKeys.ollama.trim() !== '' ? apiKeys.ollama.trim() : 'http://localhost:11434/v1';
-    const baseUrl = configuredUrl.endsWith('/') ? configuredUrl.slice(0, -1) : configuredUrl;
-
-    const fetchModels = async () => {
+    if (!enabled && !apiKeys.ollama) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    let active = true;
+    (async () => {
       try {
-        setOllamaModelError(null);
-        const response = await fetch(`${baseUrl}/models`);
-        if (!response.ok) {
-          throw new Error(`Failed to load models (status ${response.status})`);
-        }
-        const payload = await response.json();
-        const models: ModelOption[] = Array.isArray(payload?.data)
-          ? payload.data
-              .map((entry: any) => (typeof entry?.id === 'string' ? entry.id : null))
-              .filter((id: string | null): id is string => Boolean(id))
-              .map((id: string): ModelOption => ({
-                id,
-                name: id,
-                description: 'Model provided by the local Ollama instance',
-              }))
-          : [];
-        if (!isCancelled) {
-          setOllamaModels(models);
-          if (models.length === 0) {
-            setOllamaModelError('No models returned by the Ollama endpoint. Run `ollama list` to confirm availability.');
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load Ollama models:', error);
-        if (!isCancelled) {
-          setOllamaModelError(error instanceof Error ? error.message : 'Unknown error');
-          setOllamaModels((prev) => (prev.length ? prev : []));
-        }
-      }
-    };
-
-    fetchModels();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [apiKeys.ollama]);
-
-  return { ollamaModels, ollamaModelError, setOllamaModelError };
+        const response = await fetch(resolveOllamaBaseUrl(apiKeys.ollama) + '/models', { signal: controller.signal, redirect: 'error' });
+        if (!response.ok) throw new Error('Ollama discovery failed.');
+        const payload: { data?: { id?: unknown }[] } = await response.json();
+        const models = (payload.data ?? []).filter((e): e is { id: string } => typeof e.id === 'string')
+          .map(e => ({ id: e.id, name: e.id, description: e.id.includes('cloud') ? 'Cloud-backed Ollama model; may require sign-in' : 'Installed Ollama model' }));
+        if (active) { setOllamaModels(models); setOllamaModelError(models.length ? null : 'No installed models found. Pull a model in Ollama, then refresh.'); }
+      } catch {
+        if (active) { setOllamaModels([]); setOllamaModelError('Ollama unavailable. Start it, check Settings and browser origin permissions, then refresh. You can also type an installed model ID.'); }
+      } finally { clearTimeout(timer); }
+    })();
+    return () => { active = false; clearTimeout(timer); controller.abort(); };
+  }, [apiKeys.ollama, revision, enabled]);
+  return { ollamaModels, ollamaModelError, refreshOllamaModels };
 };

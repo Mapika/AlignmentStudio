@@ -1,145 +1,114 @@
-# AI Alignment Studio
+# AlignmentStudio — AGI course 2026
 
-An interactive platform for exploring AI alignment challenges through ethical scenario testing. Compare how different AI models (GPT, Claude, Gemini, Ollama) respond to ethical dilemmas where values conflict.
+An experiment notebook for investigating AI behavior and the reliability of AI judges. Design a controlled comparison, assess the evidence yourself, then test an evaluator. This React + TypeScript + Vite application needs no database, backend service, paid dependency, or mandatory paid API.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
-![React](https://img.shields.io/badge/react-19.1.1-61dafb.svg)
+## Students: start without coding or payment
 
-## What is this?
+1. Open the classroom URL supplied by your instructor. Try **no-key practice** first: inspect two authored answers and record your assessment. Loading practice uses no inference requests. These are teaching examples, not measured model behavior.
+2. Browse the scenario library using search, research themes, and development/held-out filters. Open a scenario and inspect its system prompts (role, goals, boundaries) and shared evidence. Archive scenarios to tidy the library; their saved experiments remain in the notebook.
+3. In the experiment runner, write your question, prediction, and the factor you will change. Compare instructions using the same model, or compare models using identical instructions. Both candidates receive the same evidence and initial user request.
+4. For live inference, open **Connections**. Add your own Gemini or Groq free-plan API key, or use local Ollama without a key. See [provider access and verified models](PROVIDERS.md). Select both candidate models. Leave candidate repeats at 1 and response summaries off: a paired run makes **two inference requests**.
+5. Read the answers and record your assessment before revealing model identities or judge results. Explain which evidence supports it. Blind display reduces some cues, but you may remember your setup and answers may identify their own model.
+6. Open optional **Judge Mode**, choose a judge, and review its rubric. Explicitly start evaluation: one pairwise trial makes one request; independent rubric scoring makes two. Request counts are shown before running.
+7. Rejudge the same saved answers to investigate judge variability. Repeat the same order, then enable balanced A/B–B/A trials. Edited evaluation copies can test verbosity or manipulation while preserving originals. A human assessment only compares directly with judgments of the same answers.
+8. Review the **notebook**, write a reflection, and export **JSON** for complete evidence, **CSV** for judge-call rows, or a **readable report** for annotation. Submit a short report using [ASSIGNMENT.md](ASSIGNMENT.md).
 
-This tool helps you understand one of AI's hardest problems: getting AI systems to behave ethically and align with human values. You'll test AI models with scenarios where multiple values conflict (privacy vs security, honesty vs harm prevention) and see how different models reason through these dilemmas.
+A complete basic cloud experiment costs no money within a provider's recurring free quota: use Gemini for both candidates and judge, with summaries off, one candidate run, and pairwise judging without swapping (three inference requests total). On exhausted quotas, wait for reset or use Ollama. Do not upgrade billing for this assignment. Free access is account-, region-, and capacity-dependent.
 
-The platform includes 15+ pre-built scenarios and lets you create your own. You can test multiple models side-by-side, analyze their reasoning, and export detailed reports of your experiments.
+### Practice and judge calibration
 
-## What you need
+The no-key practice exercise uses a fictional project approval policy. Four additional calibration exercises provide identical answers, an evidence-checkable factual mistake, concise/verbose versions of the same answer, and an answer with a harmless instruction to the evaluator. Their answers are deliberately authored controls. Opening or reading an exercise is free and needs no key; running a live judge still requires a configured provider and uses its quota. Guidance is a starting point for discussion, not a universal moral answer key. No preset judge scores are presented as live results.
 
-- Node.js 18 or higher
-- At least one AI API key, or Ollama installed locally
-- A modern web browser
+Use these controls before trusting a judge on difficult scenarios. A judge that detects one simple mistake is not thereby validated for ethical judgments. Keep all trials, including ties, insufficient evidence, malformed output, refusals, and request failures. A preferred original candidate changing after a swap could reflect position effects, randomness, or both.
 
-## Getting started
+## Run locally (instructors or students who prefer local use)
 
-Clone the repository and install dependencies:
+Use Node.js **24 LTS** (recommended; Vite requires a compatible modern Node release) and npm:
 
-```bash
-git clone https://github.com/Mapika/AlignmentStudio.git
-cd AlignmentStudio
-npm install
-```
-
-Start the development server:
-
-```bash
+```sh
+npm ci
 npm run dev
 ```
 
-The terminal will show a URL (usually http://localhost:5173). Open it in your browser.
+Open the printed local URL. For production:
 
-## Getting API keys
-
-You need at least one API key to test cloud-based models. The free tiers work fine for this project.
-
-**Google Gemini** (recommended, has a generous free tier)  
-Go to [Google AI Studio](https://makersuite.google.com/app/apikey), sign in, and create an API key. Keys start with `AIza...` and give you 60 requests per minute on the free tier.
-
-**OpenAI GPT**  
-Go to [OpenAI Platform](https://platform.openai.com/api-keys), create an account, and generate a new key. Keys start with `sk-...` and cost about $0.01-0.03 per test with GPT-4.
-
-**Anthropic Claude**  
-Go to [Anthropic Console](https://console.anthropic.com/), create an account, and generate a key. Keys start with `sk-ant-...` and cost about $0.01-0.04 per test.
-
-**Ollama** (free, runs locally)  
-Install [Ollama](https://ollama.ai/download) and download a model:
-
-```bash
-ollama pull qwen3:4b
+```sh
+npm run build
+npm run preview
 ```
 
-Ollama runs on `http://localhost:11434/v1` by default and needs no API key. It's free and works offline, but generation can be slow without a GPU. For machines without GPU access, stick to models with 4 billion parameters or fewer. Good options: Qwen3 (0.6b-235b), GPT-OSS (20b-120b), or Gemma3 (270m-27b).
+Host the generated `dist/` directory on an existing static classroom server or a free static host. Students only need a browser and their own provider account, or Ollama. For deployment beneath a path, build with `npm run build -- --base=/alignmentstudio/`. Scenario loading respects that base. Do not publicly expose the Vite development server.
 
-Note that smaller models (like gemma3:270m) might not understand the tasks and produce nonsense.
-
-## Setting up API keys
-
-Open the app in your browser, click the settings icon (gear in top right), enter your API keys, and save. Keys are stored in your browser's local storage and only sent to the official AI provider APIs.
-
-## Using the platform
-
-### Testing pre-built scenarios
-
-The dashboard shows 15+ scenarios like "The Whistleblower's Dilemma" and "Emergency Coordinator Dilemma." Click one to open it.
-
-The Setup tab shows the system prompts (instructions given to the AI) and information items (context for the scenario). The Test Runner tab is where you run experiments.
-
-Select models for Panel A and Panel B. You can test the same model twice or compare different models. Click "Start Test" to run the scenario.
-
-If both models receive identical prompts. Compare their responses, review the structured analysis (decision, framework, tradeoffs), and use the chat interface to ask follow-up questions.
-
-### Creating custom scenarios
-
-Click "Create New Scenario" on the dashboard. Give it a name and write System Prompt A, which defines the AI's role and directives (for example: "You are a medical AI. Your primary directive is patient wellbeing...").
-
-System Prompt B is optional. Use it to test how different instructions affect behavior.
-
-Add Information Items (emails, files, alerts, etc.) to provide context for the ethical dilemma. Save and test your scenario in the Test Runner.
-
-### Comparing models
-
-The side-by-side comparison lets you send identical prompts to two models and observe different approaches to the same dilemma. Try pairing models from different companies (Openai vs Antropic), testing the same model with different system prompts, or comparing large and small models.
-
-## Project structure
-
-```
-AligmentHWFinal/
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # UI components
-│   │   ├── services/         # AI provider integrations
-│   │   ├── hooks/            # React hooks
-│   │   ├── utils/            # Helper functions
-│   │   └── types/            # TypeScript definitions
-│   ├── public/
-│   │   └── scenarios.yaml    # Pre-built scenarios
-│   └── package.json
-└── test/
-    ├── ASSIGNMENT.md         # Assignment guidelines
-    └── scenarios.yaml        # Source scenarios
+```sh
+npm test
+npm run lint
+npm run build
+npm run test:browser:install # once: install the test browser
+npm run test:browser
 ```
 
-## Common issues
+Tests mock inference and require no accounts, keys, or model downloads. Browser regressions cover practice, generation and judging, interrupted requests, concurrent edits, downloads/imports, and mobile layout. CI runs these checks on Node 24.
 
-**API key errors**  
-Double-check your key (no spaces, complete key copied). Verify the API provider is working and your account has appropriate permissions. Some providers require a payment method on file.
+## Fully local use with Ollama
 
-**Ollama connection failed**  
-Make sure Ollama is running (`ollama list` should work). Verify the URL is `http://localhost:11434/v1`. Pull a model if you haven't (`ollama pull qwen3:4b`).
+Install [Ollama](https://ollama.com/download), then download a model once:
 
-**Build errors**  
-Clear cache and reinstall:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
+```sh
+ollama pull qwen3.5:2b
+ollama list
 ```
 
-**Slow responses**  
-Use faster models (Gemini 2.5 Flash, GPT-5 mini). Check your internet connection. Try Ollama for local processing.
+Keep Ollama running. In Settings use `http://localhost:11434/v1` (the `/v1` suffix is optional). Select **Ollama** for both candidates and the judge. Installed models are discovered automatically; after downloading another model, open model settings and **Refresh model list**. You can also type the exact installed tag. No external API key is needed. Choose local tags, not `:cloud` models. The app no longer loads a Markdown library or fonts from external CDNs, so local inference can work offline after dependencies and models are installed.
 
-## Designing good scenarios
+Ollama chooses CPU or supported GPU execution automatically. Runs are sequential so two different models do not have to remain loaded simultaneously. See [hardware guidance](PROVIDERS.md#local-hardware-guide) for realistic memory and download estimates. Small models are useful candidates for studying failures; do not assume they can reliably grade other answers.
 
-Present genuine ethical dilemmas with no clear right answer. Include conflicting values or goals, provide realistic context through information items, and make consequences meaningful. Test specific alignment concerns like deception or self-preservation.
+### Browser connections to Ollama
 
-Avoid scenarios with obvious correct answers, unrealistic situations, or insufficient context.
+A hosted page connects to Ollama on **the student's computer**, not the instructor's server. Browser local-network permissions, HTTPS/HTTP policies, and CORS can block this. Allow only the instructor's trusted origin in `OLLAMA_ORIGINS`, then restart Ollama. Do not use a wildcard origin or expose an unauthenticated Ollama port to the internet. The [official Ollama FAQ](https://docs.ollama.com/faq) explains environment settings for each OS. If a hosted page still cannot connect, run AlignmentStudio on localhost. No proxy service is required by this project.
 
-## Technical details
+## Experiments and interpretation
 
-Built with React 19.1.1, TypeScript, Vite, and TailwindCSS. Supports Anthropic Claude, OpenAI GPT, Google Gemini, and Ollama models.
+- **Candidate response**: original text produced by a model. Displayed as escaped plain text so untrusted HTML cannot execute.
+- **Structured response summary**: optional extra call summarizing the answer. Off by default; it does not judge alignment.
+- **Human assessment**: your preference and reasons, recorded separately and excluded from judge prompts. Assessments are linked to the exact answers reviewed; revisions and reveal state are retained. An assessment of original answers does not automatically apply to edited evaluation copies.
+- **Judge evaluation**: a fallible model judgment using an explicit rubric. Rubric scores are ordinal judgments, not objective alignment measurements.
+- **Position test**: evaluates A/B and B/A using frozen answers. Both verdicts refer back to the original candidate identity. Repeat same-order trials as a comparison for ordinary judge variability. Randomness can also cause changes.
+- **Independent rubric mode**: one request per candidate, without the other answer in context. Every criterion needs a valid 1–5 score and rationale; incomplete output is flagged, never silently filled in.
+- **Blinding**: provider/model metadata is withheld from the judge. Self-identification in response text is preserved, so blinding is imperfect.
+- **Manipulation/verbosity**: advanced evaluation copies allow controlled edits. Exports include both original and edited answers, actual judge instructions, raw outputs, and parse errors. Prompt boundaries are a defense, not a guarantee against judge manipulation.
+- **Reproducibility**: saved runs freeze the scenario, both system prompts, information blocks, initial request, model settings, responses, timestamps, human assessment, judge rubric and results. Actual generation inputs, reported model IDs, completion reasons and usage are retained where available. Aliases and providers can still change; temperature does not guarantee deterministic output.
+- **Completion status**: a token-limited, blocked, or interrupted response is not an ordinary completed answer. Known truncated/blocked answers require explicit inclusion before judging. Missing provider metadata is reported as unknown, not inferred to mean complete.
+- **Two kinds of repeats**: 1–3 candidate runs generate new answer pairs; 1–3 judge trials reuse frozen answers. A swap trial adds both A/B and B/A presentations. Changing the rubric, judge, answer text, or candidate context produces a different comparison group. Each new candidate run starts with a blank human assessment and no automatic judge call.
+- **Notebook**: saved runs remain accessible independently of the active scenario. Comparable judge trials show verdict counts, failures, and observed rubric-score distributions. Different stimuli or settings are kept separate. Individual scores remain in the evidence and CSV; they are not combined into an objective alignment score or a statistical confidence estimate.
+- **Insufficient evidence**: a judge or human can state that the evidence is insufficient. This is distinct from a tie between sufficiently assessed answers.
+- **Held-out testing**: label scenarios in Setup. Use development scenarios to refine prompts, then evaluate final prompts on reserved examples. Labels are reminders, not a technical lock.
 
-Your API keys are stored locally in your browser and never leave except to call official APIs. Custom scenarios are saved in browser local storage. No data is collected or tracked remotely.
+## Storage and privacy
 
-## Resources
+Scenarios and experiment records are saved in this browser, with checkpoints during work so a later failed request does not erase earlier results. Recovered in-progress work is marked interrupted; it never silently resumes network requests. Export JSON regularly, especially on shared machines. JSON can be imported; legacy v1 exports are supported. Original user-created scenarios remain readable, including ones sharing a name with a classroom scenario. Archiving a scenario preserves its experiment history. Quota/storage errors are shown without deleting older data.
 
-For background on AI alignment, read Stuart Russell's *Human Compatible* or Brian Christian's *The Alignment Problem*. The research from Anthropic, OpenAI, and DeepMind provides technical depth.
+An unfinished experiment plan survives navigation to Connections and back during the current app session. Generate a run to create a durable record; an unrun draft does not survive reloading the page.
 
-Common ethical frameworks you'll encounter: utilitarianism (greatest good for greatest number), deontology (duty-based universal rules), virtue ethics (character-based decisions), and care ethics (relationships and context).
+Avoid editing the same library in several browser tabs at once. Conflicting experiment edits are preserved as separate recovered runs; review both in the notebook and export them before continuing. Scenario setup itself is not a collaborative editor. Browser storage is a convenience, not a backup or a collaborative database.
+
+For new users, API keys stay in browser session storage unless **Remember keys** is enabled. Previously saved keys are preserved during migration. Keys are sent to the selected provider's official endpoint and remain accessible to scripts on the same origin and anyone with access to that browser profile. Do not share keys, embed instructor keys in a hosted build, or commit credentials. Clear keys after use on shared computers. Build-time environment variables are **not** a secret store; this app takes credentials only through Settings. `.env` files are ignored by Git.
+
+Cloud providers receive the scenario, prompts and responses needed for the selected action; the judge receives both answers in pairwise mode. Free plans can have different data-use terms from paid plans. Use fictional classroom data. Configurable Ollama endpoints receive prompts but never cloud credentials. Exports explicitly omit API-key configuration; anything you deliberately type into scenario text or a response is still part of the experiment.
+
+## Troubleshooting
+
+- **401/403**: check key, account permissions, region, and access to that model.
+- **429** (and 408/502/503/504): rate limit, exhausted free quota or provider outage. The app waits and retries up to twice, only before any text has arrived, and shows the countdown on screen. Each answer or judge call records how many retries it needed. There are no repair calls and no silent paid fallbacks.
+- **402**: credits required; select a `:free` OpenRouter model, a free account, or local Ollama.
+- **404**: refresh discovery or check the exact model ID in official documentation.
+- **400/422**: optional setting/JSON mode unsupported, invalid model, or context too large. Check custom IDs, shorten context, or explicitly disable structured output and run again.
+- **Ollama unavailable**: start it, check the port, installed model, CORS and local-network permissions.
+- **Incomplete judge JSON**: inspect raw output, refine instructions or try another judge. No scores are invented and no repair request is automatic.
+- **Empty model output**: reasoning may have consumed the output budget, or the provider refused. Increase the output limit explicitly if appropriate.
+- **Storage full**: export JSON immediately; current work stays in memory, but reloads may lose unsaved changes.
+
+## Structure and maintenance
+
+`src/config/index.ts` contains provider presets and easily updated model lists. `src/services/ai/compatibleService.ts` shares OpenAI-compatible routing across Groq, OpenRouter, Mistral, OpenAI and Ollama; Gemini and Anthropic retain their native SDKs. `src/utils/judge.ts` defines judge instructions, validation, response identity and comparison grouping. `src/utils/experiments.ts` handles validated imports and exports. `src/data/practice.ts` contains authored practice/calibration controls. `src/components/judge/JudgePanel.tsx` contains the optional teaching workflow. `scenarios.yaml` and `public/scenarios.yaml` are kept identical (covered by a test).
+
+Check official availability before each course. Model discovery is available for OpenAI-compatible providers; OpenRouter discovery filters to free IDs. Listing a model is not proof of free access or text-chat support. There is no credentialed live-provider validation in the automated test suite. The notebook supports descriptive comparisons; formal statistical inference and dataset splitting enforcement remain outside this teaching tool. Multiple judges can share failure modes, so agreement between them is not independent proof of correctness.

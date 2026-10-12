@@ -3,10 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run --exclude tests/browser/**",
+    "test:browser": "playwright test",
+    "test:browser:install": "playwright install chromium",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.64.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
@@ -32,6 +39,7 @@
     "globals": "^16.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitest": "^5.0.4"
   }
 }
