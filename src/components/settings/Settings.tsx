@@ -1,131 +1,46 @@
-import React from 'react';
+import { useId, useState } from 'react';
 import type { APIKeys } from '../../types';
+import { PROVIDERS, AIProvider, resolveOllamaBaseUrl } from '../../config';
 
 interface SettingsProps {
-  apiKeys: APIKeys;
-  tempKeys: APIKeys;
-  onTempKeysChange: (keys: APIKeys) => void;
-  onSave: () => void;
-  onClear: () => void;
-  onBack: () => void;
+  tempKeys: APIKeys; onTempKeysChange: (keys: APIKeys) => void;
+  rememberKeys: boolean; onRememberChange: (remember: boolean) => void;
+  onSave: () => void; onClear: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({
-  apiKeys,
-  tempKeys,
-  onTempKeysChange,
-  onSave,
-  onClear,
-  onBack: _onBack,
-}) => {
-  return (
-    <div className="space-y-6">
-      <div className="theme-surface bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-700 rounded-lg p-6 transition-colors">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100">API Keys</h2>
-          <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1">
-            Configure your API keys for AI providers
-          </p>
-        </div>
+export function Settings({ tempKeys, onTempKeysChange, rememberKeys, onRememberChange, onSave, onClear }: SettingsProps) {
+  const inputId = useId();
+  const [showKeys, setShowKeys] = useState(false);
+  const [provider, setProvider] = useState<AIProvider>(AIProvider.Gemini);
+  const preset = PROVIDERS[provider];
+  let endpointError = '';
+  try { resolveOllamaBaseUrl(tempKeys.ollama); }
+  catch { endpointError = 'Enter an HTTP or HTTPS server URL without credentials, query parameters, or a fragment.'; }
 
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              Anthropic Claude API Key
-              {apiKeys.anthropic && !tempKeys.anthropic && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded dark:bg-green-900/30 dark:text-green-200 dark:border-green-700/60">
-                  from .env
-                </span>
-              )}
-            </label>
-            <input
-              type="password"
-              value={tempKeys.anthropic || ''}
-              onChange={(e) => onTempKeysChange({ ...tempKeys, anthropic: e.target.value })}
-              placeholder="sk-ant-..."
-              className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              OpenAI API Key
-              {apiKeys.openai && !tempKeys.openai && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded dark:bg-green-900/30 dark:text-green-200 dark:border-green-700/60">
-                  from .env
-                </span>
-              )}
-            </label>
-            <input
-              type="password"
-              value={tempKeys.openai || ''}
-              onChange={(e) => onTempKeysChange({ ...tempKeys, openai: e.target.value })}
-              placeholder="sk-..."
-              className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              Google Gemini API Key
-              {apiKeys.gemini && !tempKeys.gemini && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded dark:bg-green-900/30 dark:text-green-200 dark:border-green-700/60">
-                  from .env
-                </span>
-              )}
-            </label>
-            <input
-              type="password"
-              value={tempKeys.gemini || ''}
-              onChange={(e) => onTempKeysChange({ ...tempKeys, gemini: e.target.value })}
-              placeholder="AI..."
-              className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              Ollama Endpoint
-              {apiKeys.ollama && !tempKeys.ollama && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded dark:bg-green-900/30 dark:text-green-200 dark:border-green-700/60">
-                  from .env
-                </span>
-              )}
-            </label>
-            <input
-              type="text"
-              value={tempKeys.ollama || ''}
-              onChange={(e) => onTempKeysChange({ ...tempKeys, ollama: e.target.value })}
-              placeholder="http://localhost:11434/v1"
-              className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm transition-colors"
-            />
-            <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">
-              OpenAI-compatible endpoint for local Ollama server
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={onSave}
-            className="flex-1 bg-orange-600 text-white px-4 py-2 text-sm font-medium rounded-md hover:bg-orange-700 transition-colors"
-          >
-            Save to Browser
-          </button>
-          <button
-            onClick={onClear}
-            className="px-4 py-2 text-slate-700 dark:text-neutral-200 text-sm font-medium rounded-md border border-slate-300 dark:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            Clear All
-          </button>
-        </div>
-
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md dark:bg-blue-900/30 dark:border-blue-700/40">
-          <p className="text-xs text-slate-700 dark:text-neutral-200">
-            <strong className="font-medium">Note:</strong> Keys are stored locally in your browser and never leave your device.
-          </p>
-        </div>
+  return <form onSubmit={event => { event.preventDefault(); if (!endpointError) onSave(); }}>
+    <header className="page-header"><div><span className="eyebrow">Settings</span><h1 className="mt-3">Connections</h1><p>Add your own provider key or connect to local Ollama. Only configure what you need.</p></div></header>
+    <section className="section" aria-labelledby={`${inputId}-cloud`}>
+      <div className="section-head"><h2 id={`${inputId}-cloud`} className="section-title">Cloud provider</h2><p className="help">Bring your own key. Free tiers are enough for the assignment.</p></div>
+      <div className="section-body">
+      <label className="block text-sm">Configure provider<select className="field min-h-11" value={provider} onChange={event => setProvider(event.target.value as AIProvider)}>{Object.values(AIProvider).filter(value => value !== AIProvider.Ollama).map(value => <option key={value} value={value}>{value === AIProvider.Claude ? 'Anthropic (Claude)' : value}{tempKeys[PROVIDERS[value].key!] ? ' · key added' : ''}</option>)}</select></label>
+      <div><label htmlFor={`${inputId}-key`} className="text-sm">{provider === AIProvider.Claude ? 'Anthropic (Claude)' : provider} API key</label><input id={`${inputId}-key`} className="field min-h-11" type={showKeys ? 'text' : 'password'} autoComplete="off" autoCapitalize="none" spellCheck={false} value={tempKeys[preset.key!] ?? ''} onChange={event => onTempKeysChange({ ...tempKeys, [preset.key!]: event.target.value.trim() })} aria-describedby={`${inputId}-key-help`} placeholder="Optional — add your own key" /></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><p id={`${inputId}-key-help`} className="help">{preset.access}. <a href={preset.docs} target="_blank" rel="noreferrer">Access details ↗</a></p><label className="flex min-h-11 items-center gap-2 text-xs"><input type="checkbox" checked={showKeys} onChange={event => setShowKeys(event.target.checked)} />Show API keys</label></div>
+      <p className="help">Changing this selector keeps keys entered for other providers. Saving applies all changes.</p>
       </div>
-    </div>
-  );
-};
+    </section>
+    <section className="section" aria-labelledby={`${inputId}-local`}>
+      <div className="section-head"><h2 id={`${inputId}-local`} className="section-title">Local Ollama</h2><p className="help">Run models on this computer. No key needed.</p></div>
+      <div className="section-body gap-2">
+      <div><label htmlFor={`${inputId}-endpoint`} className="text-sm">Ollama endpoint</label><input id={`${inputId}-endpoint`} className="field min-h-11" type="url" spellCheck={false} autoCapitalize="none" value={tempKeys.ollama ?? ''} placeholder="http://localhost:11434/v1" onChange={event => onTempKeysChange({ ...tempKeys, ollama: event.target.value })} aria-invalid={!!endpointError} aria-describedby={`${inputId}-endpoint-help`} /></div>
+      <p id={`${inputId}-endpoint-help`} className={endpointError ? 'error' : 'help'} role={endpointError ? 'alert' : undefined}>{endpointError || 'No key needed. Blank uses http://localhost:11434/v1; the /v1 suffix is optional. Keep Ollama running with a local model installed.'}</p>
+      </div>
+    </section>
+    <details className="fold"><summary className="min-h-11">Storage, privacy & connection help</summary><div className="space-y-4 py-3">
+      <label className="flex min-h-11 items-start gap-3 text-sm"><input type="checkbox" className="mt-1" checked={rememberKeys} onChange={event => onRememberChange(event.target.checked)} /><span>Remember keys on this browser<span className="help mt-1 block">{rememberKeys ? 'Keys persist in local storage until you clear them. Use only on a trusted browser profile.' : 'Keys use session storage. Clear them explicitly before leaving a shared computer.'}</span></span></label>
+      <p className="help">Scripts on this site and people using this browser profile can access stored keys. API-key configuration is excluded from experiment exports. Cloud providers receive the prompts and answers needed for each request. Use fictional data.</p>
+      <p className="help">Use only a trusted Ollama endpoint: scenario text goes to that address, but cloud credentials do not. Hosted pages may need local-network permission and an OLLAMA_ORIGINS setting. If a connection is blocked, run AlignmentStudio on localhost. See the README for setup.</p>
+      <button type="button" className="text-button is-danger" onClick={() => { if (confirm('Clear every saved key and the Ollama endpoint on this browser?')) onClear(); }}>Clear all connections</button>
+    </div></details>
+    <div className="flex flex-wrap items-center gap-4 border-t border-[var(--line)] pt-6"><button type="submit" className="btn min-h-11" disabled={!!endpointError}>Save connections</button><span className="help text-xs">{rememberKeys ? 'Keys remembered on this browser' : 'Keys kept for this session'}</span></div>
+  </form>;
+}
