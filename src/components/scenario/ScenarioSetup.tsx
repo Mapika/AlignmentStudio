@@ -1,14 +1,16 @@
 import React from 'react';
 import type { Scenario, InformationItem } from '../../types';
 import { InformationType } from '../../types';
-import { PlusIcon, CopyIcon } from '../icons';
+import { compareMode } from '../../utils/experiments';
+import { PlusIcon } from '../icons';
+import { Why } from '../Why';
 import { InformationItemEditor } from './InformationItemEditor';
 
 interface ScenarioSetupProps {
   scenario: Scenario;
   systemPromptA: string;
   systemPromptB: string;
-  onScenarioUpdate: (field: keyof Scenario, value: any) => void;
+  onScenarioUpdate: <K extends keyof Scenario>(field: K, value: Scenario[K]) => void;
   onSystemPromptAChange: (value: string) => void;
   onSystemPromptBChange: (value: string) => void;
   onAddItem: () => void;
@@ -17,102 +19,57 @@ interface ScenarioSetupProps {
   onCopyAtoB: () => void;
 }
 
-export const ScenarioSetup: React.FC<ScenarioSetupProps> = ({
-  scenario,
-  systemPromptA,
-  systemPromptB,
-  onScenarioUpdate,
-  onSystemPromptAChange,
-  onSystemPromptBChange,
-  onAddItem,
-  onUpdateItem,
-  onRemoveItem,
-  onCopyAtoB,
-}) => {
-  return (
-    <div className="space-y-6 overflow-y-auto pr-2 scrollbar-hide">
-      <div className="theme-surface bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-700 rounded-lg p-6 transition-colors">
-        <div className="mb-6">
-          <label htmlFor="scenarioName" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-            Scenario Name
-          </label>
-          <input
-            id="scenarioName"
-            type="text"
-            value={scenario.name}
-            onChange={(e) => onScenarioUpdate('name', e.target.value)}
-            className="w-full bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
-          />
-        </div>
-
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-medium text-slate-900 dark:text-neutral-100">System Prompts</h3>
-          <button
-            onClick={onCopyAtoB}
-            title="Copy Panel A to Panel B"
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-neutral-700 rounded-md hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            <CopyIcon /> Copy A → B
-          </button>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="systemPromptA" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              Panel A
-            </label>
-            <textarea
-              id="systemPromptA"
-              value={systemPromptA}
-              onChange={(e) => onSystemPromptAChange(e.target.value)}
-              className="w-full h-32 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y transition-colors"
-              placeholder="Define the AI's role, objectives, and constraints..."
-            />
-          </div>
-          <div>
-            <label htmlFor="systemPromptB" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              Panel B
-            </label>
-            <textarea
-              id="systemPromptB"
-              value={systemPromptB}
-              onChange={(e) => onSystemPromptBChange(e.target.value)}
-              className="w-full h-32 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y transition-colors"
-              placeholder="Define the AI's role, objectives, and constraints..."
-            />
-          </div>
-        </div>
+export const ScenarioSetup: React.FC<ScenarioSetupProps> = ({ scenario, systemPromptA, systemPromptB, onScenarioUpdate, onSystemPromptAChange, onSystemPromptBChange, onAddItem, onUpdateItem, onRemoveItem, onCopyAtoB }) => {
+  const compare = compareMode(scenario);
+  const choose = (next: 'prompts' | 'models') => {
+    if (next === compare) return;
+    if (next === 'models' && systemPromptA !== systemPromptB) {
+      if (!confirm('Use prompt A for both candidates? Prompt B will be replaced.')) return;
+      onCopyAtoB();
+    }
+    onScenarioUpdate('compare', next);
+  };
+  return <div>
+    <section className="section" aria-labelledby="basics-heading">
+      <div className="section-head"><h2 id="basics-heading" className="section-title">Basics</h2></div>
+      <div className="section-body">
+        <label htmlFor="scenarioName">Scenario name<input id="scenarioName" type="text" value={scenario.name} onChange={(event) => onScenarioUpdate('name', event.target.value)} className="field" /></label>
+        <div><label>Purpose<select className="field" value={scenario.split ?? 'development'} onChange={e => onScenarioUpdate('split', e.target.value as Scenario['split'])}><option value="development">Practice and refine (development)</option><option value="held-out">Final test (held-out)</option></select></label>
+          <Why>Keep one scenario untouched as a final test. Run it only once your prompts and rubric are fixed; if you change them after seeing its results, count that as more development. The label is a reminder, not a lock.</Why></div>
       </div>
+    </section>
 
-      <div className="theme-surface bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-700 rounded-lg p-6 transition-colors">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-slate-900 dark:text-neutral-100">Information Blocks</h3>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">Context provided to both AI models</p>
-          </div>
-          <button
-            onClick={onAddItem}
-            className="flex items-center gap-1.5 px-3 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 transition-colors"
-          >
-            <PlusIcon /> Add Block
-          </button>
+    <section className="section" aria-labelledby="instructions-heading">
+      <div className="section-head"><h2 id="instructions-heading" className="section-title">What are you comparing?</h2>
+        <p className="help">Change one thing at a time, so you can tell what caused a different answer.</p></div>
+      <div className="section-body">
+        <div className="choice-group" role="radiogroup" aria-label="What are you comparing?">
+          <label className={`choice ${compare === 'prompts' ? 'is-selected' : ''}`}><input type="radio" name="compare" checked={compare === 'prompts'} onChange={() => choose('prompts')} /><span><strong>Two system prompts</strong><span className="help block">Same model, different instructions.</span></span></label>
+          <label className={`choice ${compare === 'models' ? 'is-selected' : ''}`}><input type="radio" name="compare" checked={compare === 'models'} onChange={() => choose('models')} /><span><strong>Two models</strong><span className="help block">Same instructions, different models.</span></span></label>
         </div>
-        <div className="space-y-3">
-          {scenario.informationItems.map((item) => (
-            <InformationItemEditor key={item.id} item={item} onUpdate={onUpdateItem} onRemove={onRemoveItem} />
-          ))}
-        </div>
-        {scenario.informationItems.length === 0 && (
-          <div className="text-center py-12 border border-dashed border-slate-300 dark:border-neutral-600 rounded-md">
-            <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">No information blocks yet</p>
-            <button
-              onClick={onAddItem}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-slate-700 dark:text-neutral-200 text-sm font-medium border border-slate-300 dark:border-neutral-600 rounded-md hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
-            >
-              <PlusIcon /> Add Your First Block
-            </button>
+        {compare === 'prompts' ? <>
+          <div className="split">
+            <div><label htmlFor="systemPromptA" className="flex items-center gap-2"><span className="cand cand-A" aria-hidden="true">A</span>Candidate A · system prompt</label><textarea id="systemPromptA" value={systemPromptA} onChange={(event) => onSystemPromptAChange(event.target.value)} className="field min-h-52 resize-y" placeholder="Define the assistant’s role, goals and limits…" /></div>
+            <div><label htmlFor="systemPromptB" className="flex items-center gap-2"><span className="cand cand-B" aria-hidden="true">B</span>Candidate B · system prompt</label><textarea id="systemPromptB" value={systemPromptB} onChange={(event) => onSystemPromptBChange(event.target.value)} className="field min-h-52 resize-y" placeholder="Same as A, with the one change you want to test…" /></div>
           </div>
-        )}
+          <p className="callout" role="status">{systemPromptA === systemPromptB ? <>The prompts are identical. Edit prompt B to introduce the change you want to test. <button type="button" className="text-button min-h-0 p-0" onClick={onCopyAtoB}>Copy A → B</button></> : <>The prompts differ. You will pick one model for both candidates. <button type="button" className="text-button min-h-0 p-0" onClick={onCopyAtoB} aria-label="Copy candidate A system prompt to candidate B">Reset B to A</button></>}</p>
+        </> : <>
+          <label htmlFor="systemPromptA">System prompt for both candidates<textarea id="systemPromptA" value={systemPromptA} onChange={(event) => { onSystemPromptAChange(event.target.value); onSystemPromptBChange(event.target.value); }} className="field min-h-52 resize-y" placeholder="Define the assistant’s role, goals and limits…" /></label>
+          <p className="callout" role="status">Both candidates get these instructions. You will pick a different model for each.</p>
+        </>}
+        <Why>A system prompt sets the assistant’s role, goals and limits before the conversation starts. Comparing two prompts on the same model shows what the instructions change; comparing two models on the same prompt shows how the models differ.</Why>
       </div>
-    </div>
-  );
+    </section>
+
+    <section className="section" aria-labelledby="evidence-heading">
+      <div className="section-head"><h2 id="evidence-heading" className="section-title">Shared evidence</h2>
+        <p className="help">Documents, messages or alerts both candidates receive with the request. Use fictional data.</p>
+        <button type="button" onClick={onAddItem} className="btn-secondary"><PlusIcon />Add evidence block</button>
+      </div>
+      <div className="section-body gap-0">
+        {scenario.informationItems.map((item, index) => <InformationItemEditor key={item.id} index={index} item={item} onUpdate={onUpdateItem} onRemove={onRemoveItem} />)}
+        {!scenario.informationItems.length && <div className="empty-state"><p className="font-semibold">What evidence should the assistants consider?</p><p className="help mt-2">Add a short policy, message, or set of facts to make the decision concrete.</p></div>}
+      </div>
+    </section>
+  </div>;
 };

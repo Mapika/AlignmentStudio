@@ -1,144 +1,25 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-interface TopNavBarProps {
-  scenarioName?: string;
-  mode?: 'dashboard' | 'setup' | 'run' | 'settings';
-  onBack?: () => void;
-  onModeChange?: (mode: 'setup' | 'run') => void;
-  onOpenSettings?: () => void;
-  onImport?: () => void;
-  onReset?: () => void;
-  onExport?: (format: 'json' | 'markdown') => void;
-  theme?: 'light' | 'dark';
-  onToggleTheme?: () => void;
+export type AppMode = 'dashboard' | 'setup' | 'run' | 'settings' | 'notebook';
+interface Props {
+  scenarioName?: string; mode: AppMode; onHome: () => void; onNotebook: () => void;
+  onModeChange?: (mode: 'setup' | 'run') => void; onOpenSettings: () => void;
+  onReset?: () => void; theme: 'light' | 'dark'; onToggleTheme: () => void; runCount: number;
+  advanced: boolean; onToggleAdvanced: () => void;
 }
-
-export const TopNavBar: React.FC<TopNavBarProps> = ({
-  scenarioName,
-  mode,
-  onBack,
-  onModeChange,
-  onOpenSettings,
-  onImport,
-  onReset,
-  onExport,
-  theme = 'dark',
-  onToggleTheme,
-}) => {
-  const showScenarioControls = mode === 'setup' || mode === 'run';
-  const showRunnerControls = mode === 'run';
-  const isDarkMode = theme === 'dark';
-  const isDashboard = mode === 'dashboard';
-  const showSetupReset = mode === 'setup';
-  const titleText =
-    mode === 'dashboard' ? 'Alignment Studio' : mode === 'settings' ? 'Settings' : scenarioName || 'Scenario';
-  const titleClass =
-    mode === 'dashboard'
-      ? 'text-base font-semibold text-slate-900 dark:text-neutral-100 transition-colors'
-      : 'text-sm font-medium text-slate-900 dark:text-neutral-100 transition-colors';
-
-  return (
-    <nav className="theme-surface bg-[#e4e0da] dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800/80 px-4 py-2 shadow-sm transition-colors duration-300">
-      <div className="flex items-center justify-between relative">
-        {/* Left Section */}
-        <div className="flex items-center gap-3">
-          {onBack && !isDashboard ? (
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-left text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-colors rounded-md px-1 py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
-              aria-label="Go back"
-            >
-              <span className="flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </span>
-              <span className={titleClass}>{titleText}</span>
-            </button>
-          ) : mode === 'dashboard' ? (
-            <h1 className={titleClass}>{titleText}</h1>
-          ) : (
-            <h2 className={titleClass}>{titleText}</h2>
-          )}
-        </div>
-
-        {/* Center Section - Mode Tabs */}
-        {showScenarioControls && onModeChange && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-50 dark:bg-neutral-800/60 p-0.5 rounded-md backdrop-blur-sm transition-colors duration-300">
-            <button
-              onClick={() => onModeChange('setup')}
-              className={`px-3 py-1 text-xs font-medium transition-colors rounded-md ${
-                mode === 'setup'
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white'
-              }`}
-            >
-              Setup
-            </button>
-            <button
-              onClick={() => onModeChange('run')}
-              className={`px-3 py-1 text-xs font-medium transition-colors rounded-md ${
-                mode === 'run'
-                  ? 'bg-orange-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white'
-              }`}
-            >
-              Test Runner
-            </button>
-          </div>
-        )}
-
-        {/* Right Section - Actions */}
-        <div className="flex items-center gap-1.5">
-          {(showRunnerControls || showSetupReset) && onReset && (
-            <button
-              onClick={onReset}
-              className="px-2 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-colors rounded-md"
-            >
-              Reset
-            </button>
-          )}
-          {onToggleTheme && (
-            <button
-              onClick={onToggleTheme}
-              className="p-1.5 text-slate-600 hover:text-slate-900 dark:text-neutral-200 dark:hover:text-white transition-colors rounded-md"
-              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              aria-pressed={isDarkMode}
-            >
-              {isDarkMode ? (
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                  <circle cx="12" cy="12" r="4"></circle>
-                  <path strokeLinecap="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-7.364l-1.414 1.414M7.05 16.95l-1.414 1.414m0-13.414l1.414 1.414m10.607 10.607l1.414 1.414" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                  />
-                </svg>
-              )}
-            </button>
-          )}
-          {onOpenSettings && mode !== 'settings' && (
-            <button
-              onClick={onOpenSettings}
-              className="p-1.5 text-slate-600 hover:text-slate-900 dark:text-neutral-200 dark:hover:text-white transition-colors rounded-md"
-              title="Settings"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          )}
-        </div>
+function NavIcon({ children }: { children: ReactNode }) { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>; }
+export function TopNavBar({ scenarioName, mode, onHome, onNotebook, onModeChange, onOpenSettings, onReset, theme, onToggleTheme, runCount, advanced, onToggleAdvanced }: Props) {
+  return <header className="topbar">
+    <nav className="topbar-inner" aria-label="Main navigation">
+      <button className="brand" onClick={onHome} aria-label="AlignmentStudio home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>Alignment<span className="font-normal">Studio</span></span></button>
+      <div className="nav-links">
+        <button className={`nav-link ${mode === 'dashboard' ? 'is-active' : ''}`} aria-current={mode === 'dashboard' ? 'page' : undefined} onClick={onHome}>Investigations</button>
+        <button className={`nav-link ${mode === 'notebook' ? 'is-active' : ''}`} aria-current={mode === 'notebook' ? 'page' : undefined} onClick={onNotebook}>Notebook <span className="nav-count">{runCount}</span></button>
+        <button className={`nav-link ${mode === 'settings' ? 'is-active' : ''}`} aria-current={mode === 'settings' ? 'page' : undefined} onClick={onOpenSettings}>Connections</button>
+        <button className="switch" role="switch" aria-checked={advanced} onClick={onToggleAdvanced} title="Show research controls: sampling settings, raw prompts, provenance"><span className="switch-track" aria-hidden="true"><span className="switch-thumb" /></span>Advanced options</button>
+        <button className="icon-button" title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} onClick={onToggleTheme}>{theme === 'dark' ? <NavIcon><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12l1 1M5 19l1-1M18 6l1-1" /></NavIcon> : <NavIcon><path d="M20 15.5A8 8 0 018.5 4a8.3 8.3 0 1011.5 11.5z" /></NavIcon>}</button>
       </div>
     </nav>
-  );
-};
+    {(mode === 'setup' || mode === 'run') && <div className="scenario-bar"><div className="min-w-0"><span className="eyebrow">Current investigation</span><p className="font-medium break-words">{scenarioName}</p></div>{mode === 'run' ? <button className="btn-secondary" onClick={() => onModeChange?.('setup')}>Edit scenario</button> : <button className="btn-secondary" onClick={() => onModeChange?.('run')}>Back to experiment</button>}{onReset && <button className="text-button" onClick={onReset}>Restore original</button>}</div>}
+  </header>;
+}

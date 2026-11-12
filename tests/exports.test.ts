@@ -1,0 +1,103 @@
+import { expect, it } from 'vitest';
+import { cleanExperiment, exportCSV, exportJSON, importExperiments } from '../src/utils/experiments';
+import { experiment, settings } from './fixtures';
+import { evaluateExperiment } from '../src/services/ai/judgeService';
+import { readFileSync } from 'node:fs';
+import { loadScenariosFromYAMLText } from '../src/utils/scenarioLoader';
+import { assessmentMatches, bindHumanAssessment, snapshotCandidates, stimulusFingerprint } from '../src/utils/judge';
+
+it('round-trips all experiment evidence and excludes credential fields', async () => {
+  const exp = experiment();
+  exp.judgeSettings = settings();
+  exp.evaluations.push(await evaluateExperiment(exp, settings(), {}, { A: 'An edited copy' }, undefined, async () => ({ text: '{"verdict":"A","explanation":"Evidence"}', resolvedModel: 'actual-model' })));
+  const dirty = { ...exp, apiKeys: { groq: 'never-export-this' }, panelA: { ...exp.panelA, apiKey: 'another-secret' } };
+  const json = exportJSON([dirty]);
+  expect(json).not.toContain('never-export-this'); expect(json).not.toContain('another-secret');
+  expect(importExperiments(json)).toEqual([cleanExperiment(exp)]);
+  const restored = importExperiments(json)[0];
+  expect(restored.evaluations[0].candidates.A.originalResponse).toBe('Wait for approval.');
+  expect(restored.evaluations[0].calls[1].result?.verdict).toBe('B');
+  expect(restored.panelA.config.temperature).toBe(0.2);
+  expect(restored.scenario.split).toBe('held-out');
+});
+it('imports the old v1 format including complete scenario blocks and notes', () => {
+  const old = { version: '1.0', scenario: { name: 'Legacy', systemPromptA: 'Old A', systemPromptB: 'Old B', informationItems: [] }, panelA: { provider: 'Gemini', model: 'gemini-2.5-flash', chatHistory: [] }, panelB: { provider: 'Claude', model: 'claude-haiku-4-5', chatHistory: [] }, studentNotes: 'Retain me' };
+  const result = importExperiments(JSON.stringify(old))[0];
+  expect(result.scenario.systemPrompt).toBe('Old A');
+  expect(result.human.notes).toBe('Retain me');
+});
+it('rejects invalid imports and converts interrupted streams to explicit errors', () => {
+  expect(() => importExperiments('{"version":"999"}')).toThrow();
+  expect(() => importExperiments('[]')).toThrow();
+  const exp = experiment(); exp.panelA.chatHistory[1].isStreaming = true;
+  expect(cleanExperiment(exp).panelA.chatHistory[1].error).toMatch(/Interrupted/);
+});
+it('exports spreadsheet-safe CSV with quoting and actual candidate attribution', async () => {
+  const exp = experiment(); exp.scenario.name = '=HYPERLINK("x")';
+  exp.evaluations.push(await evaluateExperiment(exp, settings(), {}, {}, undefined, async () => ({ text: JSON.stringify({ verdict: 'A', explanation: 'Line 1, quoted "text"' }) })));
+  const csv = exportCSV([exp]);
+  expect(csv).toContain("'=HYPERLINK");
+  expect(csv).toContain('"B/A"');
+  expect(csv).toContain('"Line 1, quoted ""text"""');
+  expect(exp.evaluations[0].calls.map(call => call.result?.verdict)).toEqual(['A', 'B']);
+  expect(csv.startsWith('\uFEFF')).toBe(true);
+});
+it('ships all original scenarios plus five new ones, with stable identifiers', () => {
+  const source = readFileSync('scenarios.yaml', 'utf8');
+  expect(source).toBe(readFileSync('public/scenarios.yaml', 'utf8'));
+  const first = loadScenariosFromYAMLText(source), second = loadScenariosFromYAMLText(source);
+  expect(first).toHaveLength(24);
+  expect(first.map(s => s.id)).toEqual(second.map(s => s.id));
+  expect(new Set(first.map(s => s.id)).size).toBe(first.length);
+});
+it('preserves generation metadata, protocols, blind assessment history, and practice labels', async () => {
+  const exp = experiment();
+  exp.protocol = { question: 'Does the instruction matter?', hypothesis: 'A will ask permission.', changedFactor: 'System prompt', baselineLabel: 'Baseline', reflection: 'Evidence remains limited.' };
+  exp.source = 'calibration'; exp.calibrationHint = 'Human-authored teaching example.';
+  exp.practice = { caseId: 'identical', purpose: 'Judge calibration', expectedBehavior: 'Tie with an evidence-based explanation.' };
+  exp.scenario.archived = true;
+  exp.panelA.chatHistory[1].completion = { status: 'complete', reason: 'stop' };
+  exp.panelA.chatHistory[1].usage = { inputTokens: 30, outputTokens: 10 };
+  exp.panelA.chatHistory[1].latencyMs = 123;
+  exp.panelA.chatHistory[1].requestId = 'request-1';
+  exp.panelA.chatHistory[1].generationInput = { system: 'Actual system', messages: [{ role: 'user', content: 'Actual input' }] };
+  exp.human = bindHumanAssessment({ ...exp.human, blind: true, displayOrder: ['B', 'A'] }, snapshotCandidates(exp), settings().rubric);
+  exp.human.revisions = [{ ...exp.human, notes: 'Initial assessment' }];
+  exp.human.revealedAt = '2026-10-12T12:02:00Z';
+  exp.evaluations.push(await evaluateExperiment(exp, { ...settings(), repeats: 2 }, {}, {}, undefined, async () => ({ text: '{"verdict":"Insufficient evidence","explanation":"Missing evidence"}', completion: { status: 'complete', reason: 'stop' }, usage: { inputTokens: 50, outputTokens: 15 }, latencyMs: 22 })));
+  const restored = importExperiments(exportJSON([exp]))[0];
+  expect(restored.protocol).toEqual(exp.protocol);
+  expect(restored.source).toBe('calibration');
+  expect(restored.practice).toEqual(exp.practice);
+  expect(restored.human).toEqual(exp.human);
+  expect(restored.human.rubric).toEqual(settings().rubric);
+  expect(restored.scenario.archived).toBe(true);
+  expect(restored.evaluations[0].candidates.A.generationInput).toEqual(exp.panelA.chatHistory[1].generationInput);
+  expect(restored.evaluations[0].calls[0]).toMatchObject({ completion: { status: 'complete', reason: 'stop' }, usage: { inputTokens: 50, outputTokens: 15 }, latencyMs: 22, repeat: 1 });
+  expect(assessmentMatches(restored.human, restored.evaluations[0].candidates)).toBe(true);
+});
+it('CSV identifies both candidates, edited variants, exact rubric and stimulus, and invalid comparisons', async () => {
+  const exp = experiment(); exp.human = bindHumanAssessment(exp.human, snapshotCandidates(exp));
+  exp.evaluations.push(await evaluateExperiment(exp, { ...settings(), swap: false }, {}, { B: 'Modified response' }, undefined, async () => ({ text: '{"verdict":"A","explanation":"Evidence"}' })));
+  const csv = exportCSV([exp]);
+  expect(csv).toContain('"evaluation_id"');
+  expect(csv).toContain(exp.evaluations[0].id);
+  expect(csv).toContain('"experiment-1:A"');
+  expect(csv).toContain('"experiment-1:B"');
+  expect(csv).toContain('"edited"');
+  expect(csv).toContain('"different or unbound stimulus/rubric"');
+  expect(csv).toContain(stimulusFingerprint(exp.evaluations[0].candidates));
+  expect(csv).toContain('"valid"');
+});
+it('does not trust saved parsed results or incomplete judge metadata on import', async () => {
+  const exp = experiment();
+  const evaluation = await evaluateExperiment(exp, { ...settings(), swap: false }, {}, {}, undefined, async () => ({ text: '{"verdict":"A","explanation":"Evidence"}' }));
+  evaluation.calls[0].result = { verdict: 'B', explanation: 'Forged parsed result' };
+  exp.evaluations = [evaluation];
+  expect(cleanExperiment(exp).evaluations[0].calls[0].result?.verdict).toBe('A');
+  evaluation.calls[0].completion = { status: 'truncated', reason: 'length' };
+  expect(cleanExperiment(exp).evaluations[0].calls[0].result).toBeUndefined();
+  expect(cleanExperiment(exp).evaluations[0].calls[0].error).toMatch(/truncated/);
+  evaluation.status = 'running';
+  expect(cleanExperiment(exp).evaluations[0].status).toBe('interrupted');
+});

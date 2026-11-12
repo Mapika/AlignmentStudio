@@ -1,217 +1,49 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { InformationItem, ChatMessage, StructuredDecision, StreamCallback } from '../../types';
-import { constructInitialUserPrompt, constructAnalysisPrompt } from '../../utils/promptUtils';
+import { completionMetadata, tokenUsage, type AIRequest, type AIResponse } from './request';
 
-export const runChatTest = async (
-  apiKey: string,
-  model: string,
-  systemPrompt: string,
-  informationItems: InformationItem[],
-  chatHistory: ChatMessage[],
-  newUserMessage: string
-): Promise<string> => {
-  if (!apiKey) {
-    return 'Error: Anthropic API key is not configured. Please add it in Settings or your .env file.';
+export async function completeClaude(request: AIRequest, apiKey: string): Promise<AIResponse> {
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 0, timeout: 180_000, fetchOptions: { redirect: 'error' } });
+  const body = {
+    model: request.config.model,
+    system: request.system,
+    messages: request.messages,
+    max_tokens: request.config.maxTokens ?? 4096,
+    temperature: request.config.temperature,
+  };
+  if (request.schema) {
+    const response = await client.messages.create({
+      ...body,
+      tools: [{ name: 'evaluation', description: 'Return the requested evaluation as structured data.', input_schema: { ...request.schema, type: 'object' } }],
+      tool_choice: { type: 'tool', name: 'evaluation' },
+    }, { signal: request.signal });
+    const block = response.content.find(item => item.type === 'tool_use');
+    return { text: block?.type === 'tool_use' ? JSON.stringify(block.input) : '', resolvedModel: response.model,
+      completion: completionMetadata(response.stop_reason), usage: tokenUsage(response.usage.input_tokens, response.usage.output_tokens), requestId: response._request_id ?? undefined };
   }
-
-  const anthropic = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-
-  if (chatHistory.length === 0) {
-    const initialUserMessage = constructInitialUserPrompt(informationItems, newUserMessage);
-    chatHistory.push({ role: 'user', content: initialUserMessage });
-  } else {
-    chatHistory.push({ role: 'user', content: newUserMessage });
-  }
-
-  const messages = chatHistory.map((msg) => ({
-    role: msg.role === 'user' ? ('user' as const) : ('assistant' as const),
-    content: msg.content,
-  }));
-
-  try {
-    const response = await anthropic.messages.create({
-      model: model,
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: messages,
-    });
-
-    const textContent = response.content.find((block) => block.type === 'text');
-    return textContent && 'text' in textContent ? textContent.text : 'No response generated.';
-  } catch (error) {
-    console.error('Error calling Claude API:', error);
-    if (error instanceof Error) {
-      return `An error occurred while communicating with the Claude API: ${error.message}`;
-    }
-    return 'An unknown error occurred while communicating with the Claude API.';
-  }
-};
-
-export const runChatTestStream = async (
-  apiKey: string,
-  model: string,
-  systemPrompt: string,
-  informationItems: InformationItem[],
-  chatHistory: ChatMessage[],
-  newUserMessage: string,
-  onChunk: StreamCallback
-): Promise<string> => {
-  if (!apiKey) {
-    const errorMsg = 'Error: Anthropic API key is not configured. Please add it in Settings or your .env file.';
-    onChunk(errorMsg);
-    return errorMsg;
-  }
-
-  const anthropic = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-
-  if (chatHistory.length === 0) {
-    const initialUserMessage = constructInitialUserPrompt(informationItems, newUserMessage);
-    chatHistory.push({ role: 'user', content: initialUserMessage });
-  } else {
-    chatHistory.push({ role: 'user', content: newUserMessage });
-  }
-
-  const messages = chatHistory.map((msg) => ({
-    role: msg.role === 'user' ? ('user' as const) : ('assistant' as const),
-    content: msg.content,
-  }));
-
-  try {
-    const stream = await anthropic.messages.create({
-      model: model,
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: messages,
-      stream: true,
-    });
-
-    let fullResponse = '';
+  if (request.onChunk) {
+    const { data: stream, response: httpResponse } = await client.messages.create({ ...body, stream: true }, { signal: request.signal }).withResponse();
+    let text = '';
+    let resolvedModel: string | undefined;
+    let finishReason: string | undefined;
+    let usage: AIResponse['usage'];
     for await (const event of stream) {
+      if (event.type === 'message_start') {
+        resolvedModel = event.message.model;
+        finishReason = event.message.stop_reason ?? undefined;
+        usage = tokenUsage(event.message.usage.input_tokens, event.message.usage.output_tokens);
+      }
+      if (event.type === 'message_delta') {
+        finishReason = event.delta.stop_reason || finishReason;
+        usage = tokenUsage(usage?.inputTokens, event.usage.output_tokens);
+      }
       if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        const content = event.delta.text;
-        fullResponse += content;
-        onChunk(content);
+        text += event.delta.text;
+        request.onChunk(event.delta.text);
       }
     }
-
-    return fullResponse || 'No response generated.';
-  } catch (error) {
-    console.error('Error calling Claude API:', error);
-    const errorMsg = error instanceof Error
-      ? `An error occurred while communicating with the Claude API: ${error.message}`
-      : 'An unknown error occurred while communicating with the Claude API.';
-    onChunk('\n\n' + errorMsg);
-    return errorMsg;
+    return { text, resolvedModel, completion: completionMetadata(finishReason), usage, requestId: httpResponse.headers.get('request-id') ?? undefined };
   }
-};
-
-export const analyzeAlignment = async (
-  apiKey: string,
-  model: string,
-  systemPrompt: string,
-  informationItems: InformationItem[],
-  chatHistory: ChatMessage[],
-  modelResponse: string
-): Promise<string> => {
-  if (!apiKey) {
-    return 'Error: Anthropic API key is not configured. Please add it in Settings or your .env file.';
-  }
-
-  const anthropic = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-  const analysisPrompt = constructAnalysisPrompt(systemPrompt, informationItems, chatHistory, modelResponse);
-
-  try {
-    const response = await anthropic.messages.create({
-      model: model,
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: analysisPrompt,
-        },
-      ],
-    });
-
-    const textContent = response.content.find((block) => block.type === 'text');
-    return textContent && 'text' in textContent ? textContent.text : 'No analysis generated.';
-  } catch (error) {
-    console.error('Error calling Claude API for analysis:', error);
-    if (error instanceof Error) {
-      return `An error occurred while analyzing the response: ${error.message}`;
-    }
-    return 'An unknown error occurred during the analysis.';
-  }
-};
-
-export const extractStructuredDecision = async (
-  apiKey: string,
-  model: string,
-  modelResponse: string
-): Promise<StructuredDecision | null> => {
-  if (!apiKey) {
-    console.error('Anthropic API key is not configured');
-    return null;
-  }
-
-  const anthropic = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-
-  const tools = [
-    {
-      name: 'structured_decision',
-      description: 'Extract a structured decision summary from an AI response',
-      input_schema: {
-        type: 'object' as const,
-        properties: {
-          decision: {
-            type: 'string' as const,
-            description: 'The clear decision or action taken, in one sentence',
-          },
-          reasoning: {
-            type: 'string' as const,
-            description: 'Brief summary of the key reasoning (2-3 sentences)',
-          },
-          ethicalFramework: {
-            type: 'string' as const,
-            description: 'The ethical framework applied (e.g., Utilitarianism, Deontology, Virtue Ethics, Care Ethics)',
-          },
-          tradeoffs: {
-            type: 'array' as const,
-            items: {
-              type: 'string' as const,
-            },
-            description: 'Array of key tradeoffs considered',
-          },
-        },
-        required: ['decision', 'reasoning', 'ethicalFramework', 'tradeoffs'],
-      },
-    },
-  ];
-
-  const extractionPrompt = `Extract a structured decision summary from the following AI response:
-
-${modelResponse}`;
-
-  try {
-    const response = await anthropic.messages.create({
-      model: model,
-      max_tokens: 1024,
-      tools: tools,
-      tool_choice: { type: 'tool', name: 'structured_decision' },
-      messages: [
-        {
-          role: 'user',
-          content: extractionPrompt,
-        },
-      ],
-    });
-
-    const toolUse = response.content.find((block) => block.type === 'tool_use');
-    if (toolUse && 'input' in toolUse) {
-      return toolUse.input as StructuredDecision;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error extracting structured decision from Claude:', error);
-    return null;
-  }
-};
+  const response = await client.messages.create(body, { signal: request.signal });
+  return { text: response.content.filter(item => item.type === 'text').map(item => item.text).join('\n'), resolvedModel: response.model,
+    completion: completionMetadata(response.stop_reason), usage: tokenUsage(response.usage.input_tokens, response.usage.output_tokens), requestId: response._request_id ?? undefined };
+}

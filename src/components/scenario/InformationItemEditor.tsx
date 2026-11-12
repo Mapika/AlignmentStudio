@@ -1,54 +1,34 @@
-import React from 'react';
+import React, { useId } from 'react';
 import type { InformationItem } from '../../types';
 import { InformationType } from '../../types';
 import { TrashIcon } from '../icons';
 
 interface InformationItemEditorProps {
   item: InformationItem;
+  index?: number;
   onUpdate: (id: string, field: keyof InformationItem, value: string | InformationType) => void;
   onRemove: (id: string) => void;
 }
 
-export const InformationItemEditor: React.FC<InformationItemEditorProps> = ({
-  item,
-  onUpdate,
-  onRemove,
-}) => {
-  return (
-    <div className="theme-surface bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-md p-4 transition-colors">
-      <div className="flex gap-3 mb-3">
-        <select
-          value={item.type}
-          onChange={(e) => onUpdate(item.id, 'type', e.target.value as InformationType)}
-          className="bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-3 py-2 text-slate-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
-        >
-          {Object.values(InformationType).map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          placeholder="Information Title"
-          value={item.title}
-          onChange={(e) => onUpdate(item.id, 'title', e.target.value)}
-          className="flex-1 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-4 py-2 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
-        />
-        <button
-          onClick={() => onRemove(item.id)}
-          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
-          title="Remove this information block"
-        >
-          <TrashIcon />
-        </button>
-      </div>
-      <textarea
-        placeholder="Content..."
-        value={item.content}
-        onChange={(e) => onUpdate(item.id, 'content', e.target.value)}
-        className="w-full h-24 bg-white dark:bg-neutral-950/40 border border-slate-300 dark:border-neutral-700 rounded-md px-4 py-3 text-slate-900 dark:text-neutral-100 text-sm placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y transition-colors"
-      />
+export const InformationItemEditor: React.FC<InformationItemEditorProps> = ({ item, index = 0, onUpdate, onRemove }) => {
+  const inputId = useId();
+  return <fieldset className={index ? 'border-t border-[var(--line)] pt-7 pb-7' : 'pb-7'}>
+    <legend className="sr-only">{item.title || 'Untitled evidence block'}</legend>
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <span className="text-sm font-semibold">Block {index + 1}</span>
+      <button type="button" onClick={() => onRemove(item.id)} className="text-button is-danger inline-flex items-center gap-2 font-medium" aria-label={`Remove evidence block: ${item.title || 'Untitled'}`}><TrashIcon /><span>Remove</span></button>
     </div>
-  );
+    <div className="mb-4 grid gap-4 sm:grid-cols-[11rem_minmax(0,1fr)]">
+      <div><label htmlFor={`${inputId}-type`}>Evidence type</label>
+        <select id={`${inputId}-type`} value={item.type} onChange={(event) => onUpdate(item.id, 'type', event.target.value as InformationType)} className="field">
+          {Object.values(InformationType).map(type => <option key={type} value={type}>{type}</option>)}
+        </select>
+      </div>
+      <div className="min-w-0"><label htmlFor={`${inputId}-title`}>Evidence title</label>
+        <input id={`${inputId}-title`} type="text" placeholder="For example: project approval policy" value={item.title} onChange={(event) => onUpdate(item.id, 'title', event.target.value)} className="field" />
+      </div>
+    </div>
+    <label htmlFor={`${inputId}-content`}>Evidence content</label>
+    <textarea id={`${inputId}-content`} placeholder="Paste the fictional document, message, or other context both candidates should receive…" value={item.content} onChange={(event) => onUpdate(item.id, 'content', event.target.value)} className="field min-h-36 resize-y" />
+  </fieldset>;
 };
